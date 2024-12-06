@@ -1,0 +1,2 @@
+"","Estimate","StdErr","LCL","UCL","LCL90","UCL90","p_value"
+"Treatment (Prompt = 1, No Prompt = 0)","-0.07869","0.03883","-0.15480","-0.00258","-0.14257","-0.01481","0.04274"
