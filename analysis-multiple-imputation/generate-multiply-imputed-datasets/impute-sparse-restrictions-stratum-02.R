@@ -71,7 +71,6 @@ dat_long_merged <- left_join(x = dat_wide_completed_baseline, y = dat_long, by =
 #                                                                             #
 ###############################################################################
 dat_stratum <- dat_long_merged %>% filter(!!rlang::parse_expr(use_cond))
-dat_stratum[["Y"]] <- as_factor(dat_stratum[["Y"]])
 
 ###############################################################################
 #                                                                             #
@@ -93,56 +92,32 @@ if(which_penalty == "BIC"){
 #    Specify variables we would consider as predictors in imputation models   #
 #                                                                             #
 ###############################################################################
-my_list <- list("expectancy_cig" = NULL,
-                "self_efficacy_cig" = NULL,
-                "cigarette_counts" = NULL,
-                "Y" = NULL,
-                "motivation_cig" = NULL)
-
-this_outcome <- "expectancy_cig"
-my_list[[this_outcome]] <- c(this_outcome,
-                             "baseline_tobacco_history",
-                             "income_val",
-                             "FinancialStrain",
-                             "nd_mean",
-                             "food_security_mean",
-                             "SSSladders",
-                             "pp1_1")
-
-
-this_outcome <- "self_efficacy_cig"
-my_list[[this_outcome]] <- c(this_outcome,
-                             "baseline_tobacco_history",
-                             "SE_total",
-                             "srq_mean",
-                             "hour_coinflip_local",
-                             "days_between_v1_and_coinflip_local",
-                             "hours_elapsed_since_most_recent_eligible")
+my_list <- list("cigarette_counts" = NULL,
+                "motivation_cig" = NULL,
+                "self_efficacy_cig" = NULL)
 
 this_outcome <- "cigarette_counts"
 my_list[[this_outcome]] <- c(this_outcome,
-                             "baseline_tobacco_history",
-                             "hour_coinflip_local",
-                             "days_between_v1_and_coinflip_local",
-                             "hours_elapsed_since_most_recent_eligible")
-
-this_outcome <- "Y"
-my_list[[this_outcome]] <- c(this_outcome,
-                             "baseline_tobacco_history",
-                             "SE_total",
-                             "srq_mean",
-                             "is_high_effort", "is_low_effort",
+                             "baseline_tobacco_history", "Nicotine_dep",
                              "hour_coinflip_local",
                              "days_between_v1_and_coinflip_local",
                              "hours_elapsed_since_most_recent_eligible")
 
 this_outcome <- "motivation_cig"
 my_list[[this_outcome]] <- c(this_outcome,
-                             "baseline_tobacco_history",
-                             "SE_total",
-                             "srq_mean",
-                             "is_high_effort", "is_low_effort",
+                             "TSAM_Total",
                              "hour_coinflip_local",
+                             "cigarette_counts",
+                             "days_between_v1_and_coinflip_local",
+                             "hours_elapsed_since_most_recent_eligible")
+
+this_outcome <- "self_efficacy_cig"
+my_list[[this_outcome]] <- c(this_outcome,
+                             "is_high_effort", "is_low_effort",
+                             "SE_total",
+                             "hour_coinflip_local",
+                             "cigarette_counts",
+                             "motivation_cig",
                              "days_between_v1_and_coinflip_local",
                              "hours_elapsed_since_most_recent_eligible")
 
@@ -151,250 +126,24 @@ my_list[[this_outcome]] <- c(this_outcome,
 #              Create a list in which to save any mice logged events          #
 #                                                                             #
 ###############################################################################
-list_mice_logged_events <- list("expectancy_cig" = NULL,
-                                "self_efficacy_cig" = NULL,
-                                "cigarette_counts" = NULL,
-                                "Y" = NULL,
-                                "motivation_cig" = NULL)
+list_mice_logged_events <- list("cigarette_counts" = NULL,
+                                "motivation_cig" = NULL,
+                                "self_efficacy_cig" = NULL)
 
-list_mice_model <- list("expectancy_cig" = NULL,
-                        "self_efficacy_cig" = NULL,
-                        "cigarette_counts" = NULL,
-                        "Y" = NULL,
-                        "motivation_cig" = NULL)
+list_mice_model <- list("cigarette_counts" = NULL,
+                        "motivation_cig" = NULL,
+                        "self_efficacy_cig" = NULL)
 
-list_logged_convergence_initial_model <- list("expectancy_cig" = NULL,
-                                              "self_efficacy_cig" = NULL,
-                                              "cigarette_counts" = NULL,
-                                              "Y" = NULL,
-                                              "motivation_cig" = NULL)
+list_logged_convergence_initial_model <- list("cigarette_counts" = NULL,
+                                              "motivation_cig" = NULL,
+                                              "self_efficacy_cig" = NULL)
 
-list_logged_convergence_stepwise_model <- list("expectancy_cig" = NULL,
-                                               "self_efficacy_cig" = NULL,
-                                               "cigarette_counts" = NULL,
-                                               "Y" = NULL,
-                                               "motivation_cig" = NULL)
+list_logged_convergence_stepwise_model <- list("cigarette_counts" = NULL,
+                                               "motivation_cig" = NULL,
+                                               "self_efficacy_cig" = NULL)
 
 ###############################################################################
-# Step 1. Impute expectancy_cig
-###############################################################################
-this_outcome <- "expectancy_cig"
-
-# Initialize list and matrix which will store imputation method and formula ---
-dummy_list <- as.list(colnames(dat_stratum))
-dummy_list <- lapply(dummy_list, function(x){return("")})
-names(dummy_list) <- colnames(dat_stratum)
-meth_list <- dummy_list
-
-vars <- colnames(dat_stratum)
-pred_mat <- matrix(0, nrow = length(vars), ncol = length(vars), dimnames = list(vars, vars))
-
-check_convergence_result <- TRUE
-
-consider_these_vars <- my_list[[which(names(my_list) == this_outcome)]]
-dat_for_variable_selection <- dat_stratum %>% filter(replicate_id == 0) %>% select(all_of(consider_these_vars))
-fit <- tryCatch(expr = {glm(as.formula(paste(this_outcome, "~ .", sep = "")), family = gaussian, data = dat_for_variable_selection)}, 
-                warning = function(w){"Hey, a warning"})
-check_convergence_result <- (class(fit)[[1]] == "glm")  # fit will be of class "character" if there was a convergence issue
-
-if(check_convergence_result == TRUE){
-  stepwise_convergence <- TRUE
-  
-  fit_step <- tryCatch(expr = {
-    stepAIC(fit, 
-            direction = "both",
-            scope = list(lower = as.formula("~1"),
-                         upper = fit$formula),
-            trace = FALSE, 
-            k = use_penalty)  # To use AUC, set k=2. To use BIC, set k = log(n)
-  }, warning = function(w){"Hey, a warning"})
-  
-  stepwise_convergence <- (class(fit_step)[[1]] == "glm")
-  
-  if(stepwise_convergence == TRUE){
-    use_fit <- fit_step
-  }else{
-    use_fit <- fit
-  }
-  
-  info_criterion <- extractAIC(use_fit, k = use_penalty)[[2]]  # Calculated info criterion of selected model
-  
-  selected_vars <- names(use_fit$coefficients)
-  selected_vars <- selected_vars[-1] # remove the intercept term because the predictorMatrix argument does not allow a row/column for that
-  
-  if(length(selected_vars) == 0){
-    meth_list[[this_outcome]] <- "pmm"
-    
-    dummy_list <- as.list(colnames(dat_stratum))
-    dummy_list <- lapply(dummy_list, function(x){return("")})
-    names(dummy_list) <- colnames(dat_stratum)
-    formula_list <- dummy_list
-    
-    for(i in 1:length(formula_list)){
-      fmla <- as.formula(paste(names(formula_list)[i], "~ 1", sep = ""))
-      formula_list[[i]] <- fmla
-    }
-    
-    imp <- mice(data = dat_stratum, 
-                m = 1, 
-                maxit = use_maxit_value,
-                meth =  meth_list,
-                formulas = formula_list)
-    dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
-  }else{
-    for(i in 1:length(selected_vars)){
-      pred_mat[this_outcome, selected_vars[i]] <- 1
-    }
-    
-    meth_list[[this_outcome]] <- "pmm"
-    imp <- mice(data = dat_stratum, 
-                m = 1, 
-                maxit = use_maxit_value,
-                meth =  meth_list,
-                predictorMatrix = pred_mat)
-    dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
-  }
-}else{
-  stepwise_convergence <- TRUE # This is just a placeholder value for this condition
-  meth_list[[this_outcome]] <- "pmm"
-  
-  dummy_list <- as.list(colnames(dat_stratum))
-  dummy_list <- lapply(dummy_list, function(x){return("")})
-  names(dummy_list) <- colnames(dat_stratum)
-  formula_list <- dummy_list
-  
-  for(i in 1:length(formula_list)){
-    fmla <- as.formula(paste(names(formula_list)[i], "~ 1", sep = ""))
-    formula_list[[i]] <- fmla
-  }
-  
-  imp <- mice(data = dat_stratum, 
-              m = 1, 
-              maxit = use_maxit_value,
-              meth =  meth_list,
-              formulas = formula_list)
-  dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
-}
-
-# Before we move on to the next variable...
-dat_stratum <- dat_stratum_completed
-list_mice_logged_events[[this_outcome]] <- list(imp$loggedEvents)
-list_mice_model[[this_outcome]] <- list(imp$formulas[[this_outcome]])
-
-list_logged_convergence_initial_model[[which(names(list_logged_convergence_initial_model) == this_outcome)]] <- check_convergence_result
-list_logged_convergence_stepwise_model[[which(names(list_logged_convergence_stepwise_model) == this_outcome)]] <- stepwise_convergence
-
-###############################################################################
-# Step 2. Impute self_efficacy_cig
-###############################################################################
-this_outcome <- "self_efficacy_cig"
-
-# Initialize list and matrix which will store imputation method and formula ---
-dummy_list <- as.list(colnames(dat_stratum))
-dummy_list <- lapply(dummy_list, function(x){return("")})
-names(dummy_list) <- colnames(dat_stratum)
-meth_list <- dummy_list
-
-vars <- colnames(dat_stratum)
-pred_mat <- matrix(0, nrow = length(vars), ncol = length(vars), dimnames = list(vars, vars))
-
-check_convergence_result <- TRUE
-
-consider_these_vars <- my_list[[which(names(my_list) == this_outcome)]]
-dat_for_variable_selection <- dat_stratum %>% filter(replicate_id == 0) %>% select(all_of(consider_these_vars))
-fit <- tryCatch(expr = {glm(as.formula(paste(this_outcome, "~ .", sep = "")), family = gaussian, data = dat_for_variable_selection)}, 
-                warning = function(w){"Hey, a warning"})
-check_convergence_result <- (class(fit)[[1]] == "glm")  # fit will be of class "character" if there was a convergence issue
-
-if(check_convergence_result == TRUE){
-  stepwise_convergence <- TRUE
-  
-  fit_step <- tryCatch(expr = {
-    stepAIC(fit, 
-            direction = "both",
-            scope = list(lower = as.formula("~1"),
-                         upper = fit$formula),
-            trace = FALSE, 
-            k = use_penalty)  # To use AUC, set k=2. To use BIC, set k = log(n)
-  }, warning = function(w){"Hey, a warning"})
-  
-  stepwise_convergence <- (class(fit_step)[[1]] == "glm")
-  
-  if(stepwise_convergence == TRUE){
-    use_fit <- fit_step
-  }else{
-    use_fit <- fit
-  }
-  
-  info_criterion <- extractAIC(use_fit, k = use_penalty)[[2]]  # Calculated info criterion of selected model
-  
-  selected_vars <- names(use_fit$coefficients)
-  selected_vars <- selected_vars[-1] # remove the intercept term because the predictorMatrix argument does not allow a row/column for that
-  
-  if(length(selected_vars) == 0){
-    meth_list[[this_outcome]] <- "pmm"
-    
-    dummy_list <- as.list(colnames(dat_stratum))
-    dummy_list <- lapply(dummy_list, function(x){return("")})
-    names(dummy_list) <- colnames(dat_stratum)
-    formula_list <- dummy_list
-    
-    for(i in 1:length(formula_list)){
-      fmla <- as.formula(paste(names(formula_list)[i], "~ 1", sep = ""))
-      formula_list[[i]] <- fmla
-    }
-    
-    imp <- mice(data = dat_stratum, 
-                m = 1, 
-                maxit = use_maxit_value,
-                meth =  meth_list,
-                formulas = formula_list)
-    dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
-  }else{
-    for(i in 1:length(selected_vars)){
-      pred_mat[this_outcome, selected_vars[i]] <- 1
-    }
-    
-    meth_list[[this_outcome]] <- "pmm"
-    imp <- mice(data = dat_stratum, 
-                m = 1, 
-                maxit = use_maxit_value,
-                meth =  meth_list,
-                predictorMatrix = pred_mat)
-    dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
-  }
-}else{
-  stepwise_convergence <- TRUE # This is just a placeholder value for this condition
-  meth_list[[this_outcome]] <- "pmm"
-  
-  dummy_list <- as.list(colnames(dat_stratum))
-  dummy_list <- lapply(dummy_list, function(x){return("")})
-  names(dummy_list) <- colnames(dat_stratum)
-  formula_list <- dummy_list
-  
-  for(i in 1:length(formula_list)){
-    fmla <- as.formula(paste(names(formula_list)[i], "~ 1", sep = ""))
-    formula_list[[i]] <- fmla
-  }
-  
-  imp <- mice(data = dat_stratum, 
-              m = 1, 
-              maxit = use_maxit_value,
-              meth =  meth_list,
-              formulas = formula_list)
-  dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
-}
-
-# Before we move on to the next variable...
-dat_stratum <- dat_stratum_completed
-list_mice_logged_events[[this_outcome]] <- list(imp$loggedEvents)
-list_mice_model[[this_outcome]] <- list(imp$formulas[[this_outcome]])
-
-list_logged_convergence_initial_model[[which(names(list_logged_convergence_initial_model) == this_outcome)]] <- check_convergence_result
-list_logged_convergence_stepwise_model[[which(names(list_logged_convergence_stepwise_model) == this_outcome)]] <- stepwise_convergence
-
-###############################################################################
-# Step 3. Impute cigarette_counts
+# Step 1. Impute cigarette_counts
 ###############################################################################
 this_outcome <- "cigarette_counts"
 
@@ -503,9 +252,9 @@ list_logged_convergence_initial_model[[which(names(list_logged_convergence_initi
 list_logged_convergence_stepwise_model[[which(names(list_logged_convergence_stepwise_model) == this_outcome)]] <- stepwise_convergence
 
 ###############################################################################
-# Step 4. Impute Y
+# Step 2. Impute motivation_cig
 ###############################################################################
-this_outcome <- "Y"
+this_outcome <- "motivation_cig"
 
 # Initialize list and matrix which will store imputation method and formula ---
 dummy_list <- as.list(colnames(dat_stratum))
@@ -520,7 +269,7 @@ check_convergence_result <- TRUE
 
 consider_these_vars <- my_list[[which(names(my_list) == this_outcome)]]
 dat_for_variable_selection <- dat_stratum %>% filter(replicate_id == 0) %>% select(all_of(consider_these_vars))
-fit <- tryCatch(expr = {glm(as.formula(paste(this_outcome, "~ .", sep = "")), family = binomial, data = dat_for_variable_selection)}, 
+fit <- tryCatch(expr = {glm(as.formula(paste(this_outcome, "~ .", sep = "")), family = gaussian, data = dat_for_variable_selection)}, 
                 warning = function(w){"Hey, a warning"})
 check_convergence_result <- (class(fit)[[1]] == "glm")  # fit will be of class "character" if there was a convergence issue
 
@@ -530,7 +279,7 @@ if(check_convergence_result == TRUE){
   fit_step <- tryCatch(expr = {
     stepAIC(fit, 
             direction = "both",
-            scope = list(lower = as.formula("~is_high_effort + is_low_effort"),
+            scope = list(lower = as.formula("~1"),
                          upper = fit$formula),
             trace = FALSE, 
             k = use_penalty)  # To use AUC, set k=2. To use BIC, set k = log(n)
@@ -550,20 +299,30 @@ if(check_convergence_result == TRUE){
   selected_vars <- selected_vars[-1] # remove the intercept term because the predictorMatrix argument does not allow a row/column for that
   
   if(length(selected_vars) == 0){
-    stepwise_convergence <- TRUE # This is just a placeholder value for this condition
-    dat_stratum[[LHS]] <- as.numeric(dat_stratum[[LHS]]) - 1
-    n_missing <- sum(ici(dat_stratum[[LHS]]))
-    fit_step <- glm(as.formula(paste(LHS, "~ 1", sep = "")), family = binomial, data = dat_stratum)
-    tmp_dat <- predict.glm(fit_step, type = "response")
-    imputed_vals <- rbinom(n = n_missing, size = 1, prob = tmp_dat[[1]])
-    dat_stratum[[LHS]][ici(dat_stratum[[LHS]])] <- imputed_vals
-    dat_stratum_completed <- dat_stratum  # Update dat_stratum
+    meth_list[[this_outcome]] <- "pmm"
+    
+    dummy_list <- as.list(colnames(dat_stratum))
+    dummy_list <- lapply(dummy_list, function(x){return("")})
+    names(dummy_list) <- colnames(dat_stratum)
+    formula_list <- dummy_list
+    
+    for(i in 1:length(formula_list)){
+      fmla <- as.formula(paste(names(formula_list)[i], "~ 1", sep = ""))
+      formula_list[[i]] <- fmla
+    }
+    
+    imp <- mice(data = dat_stratum, 
+                m = 1, 
+                maxit = use_maxit_value,
+                meth =  meth_list,
+                formulas = formula_list)
+    dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
   }else{
     for(i in 1:length(selected_vars)){
       pred_mat[this_outcome, selected_vars[i]] <- 1
     }
     
-    meth_list[[this_outcome]] <- "logreg"
+    meth_list[[this_outcome]] <- "pmm"
     imp <- mice(data = dat_stratum, 
                 m = 1, 
                 maxit = use_maxit_value,
@@ -573,18 +332,27 @@ if(check_convergence_result == TRUE){
   }
 }else{
   stepwise_convergence <- TRUE # This is just a placeholder value for this condition
-  dat_stratum[[LHS]] <- as.numeric(dat_stratum[[LHS]]) - 1
-  n_missing <- sum(ici(dat_stratum[[LHS]]))
-  fit_step <- glm(as.formula(paste(LHS, "~ 1", sep = "")), family = binomial, data = dat_stratum)
-  tmp_dat <- predict.glm(fit_step, type = "response")
-  imputed_vals <- rbinom(n = n_missing, size = 1, prob = tmp_dat[[1]])
-  dat_stratum[[LHS]][ici(dat_stratum[[LHS]])] <- imputed_vals
-  dat_stratum_completed <- dat_stratum  # Update dat_stratum
+  meth_list[[this_outcome]] <- "pmm"
+  
+  dummy_list <- as.list(colnames(dat_stratum))
+  dummy_list <- lapply(dummy_list, function(x){return("")})
+  names(dummy_list) <- colnames(dat_stratum)
+  formula_list <- dummy_list
+  
+  for(i in 1:length(formula_list)){
+    fmla <- as.formula(paste(names(formula_list)[i], "~ 1", sep = ""))
+    formula_list[[i]] <- fmla
+  }
+  
+  imp <- mice(data = dat_stratum, 
+              m = 1, 
+              maxit = use_maxit_value,
+              meth =  meth_list,
+              formulas = formula_list)
+  dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
 }
 
 # Before we move on to the next variable...
-dat_stratum_completed[[this_outcome]] <- as.numeric(dat_stratum_completed[[this_outcome]]) - 1
-
 dat_stratum <- dat_stratum_completed
 list_mice_logged_events[[this_outcome]] <- list(imp$loggedEvents)
 list_mice_model[[this_outcome]] <- list(imp$formulas[[this_outcome]])
@@ -593,9 +361,9 @@ list_logged_convergence_initial_model[[which(names(list_logged_convergence_initi
 list_logged_convergence_stepwise_model[[which(names(list_logged_convergence_stepwise_model) == this_outcome)]] <- stepwise_convergence
 
 ###############################################################################
-# Step 5. Impute motivation_cig
+# Step 3. Impute self_efficacy_cig
 ###############################################################################
-this_outcome <- "motivation_cig"
+this_outcome <- "self_efficacy_cig"
 
 # Initialize list and matrix which will store imputation method and formula ---
 dummy_list <- as.list(colnames(dat_stratum))

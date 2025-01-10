@@ -8,6 +8,7 @@ library(tidyverse)
 ################################################################################
 # Load curated datasets
 ################################################################################
+dat_visit01 <- readRDS(file = file.path(path_curated_visit_data, "v1_baseline_quest.rds"))
 dat_master_ema_questions <- readRDS(file = file.path(path_manipulated_data, "dat_master_ema_questions.rds"))
 dat_master_ema_response_options <- readRDS(file = file.path(path_manipulated_data, "dat_master_ema_response_options.rds"))
 dat_matched_to_decision_points <- readRDS(file = file.path(path_manipulated_data, "dat_matched_to_decision_points.rds"))
@@ -18,14 +19,21 @@ dat_primary_aim <- readRDS(file = file.path(path_manipulated_data, "dat_primary_
 dat_analysis <- dat_matched_to_decision_points %>% filter(!(mars_id %in% mars_ids_excluded_from_all_analytic_datasets))
 all_ids <- unique(dat_analysis[["mars_id"]])
 n_ids <- length(all_ids)
+
 dat_analysis <- left_join(x = dat_analysis,
                           y = scanned_decision_points_within_range,
                           by = join_by(mars_id == mars_id, decision_point == decision_point))
+
+dat_analysis <- left_join(x = dat_analysis,
+                          y = dat_visit01 %>% select(mars_id, TSAM_Total),
+                          by = join_by(mars_id == mars_id))
 
 ################################################################################
 # Keep track of column names you will want to keep
 ################################################################################
 keep_these_columns_for_analysis <- list()
+
+keep_these_columns_for_analysis <- append(keep_these_columns_for_analysis, list(c("TSAM_Total")))
 
 ################################################################################
 # Create new variables

@@ -56,10 +56,6 @@ for(.__current_idx in 1:.__total_imputed_datasets){
   source(file.path("analysis-multiple-imputation", "analyze-one-completed-dataset", "analyze-one-completed-dataset-primary-aim-study-day-quadratic.R"))
 }
 
-for(.__current_idx in 1:.__total_imputed_datasets){
-  source(file.path("analysis-multiple-imputation", "analyze-one-completed-dataset", "analyze-one-completed-dataset-primary-aim-study-day-cubic.R"))
-}
-
 ###############################################################################
 # Pooling estimates across imputed datasets and posterior predictive checking
 ###############################################################################
@@ -73,6 +69,36 @@ source(file.path("analysis-multiple-imputation", "pool-and-ppc", "pool-primary-s
 
 source(file.path("analysis-multiple-imputation", "pool-and-ppc", "pool-primary-study-day-quadratic.R"))
 
-source(file.path("analysis-multiple-imputation", "pool-and-ppc", "pool-primary-study-day-cubic.R"))
+###############################################################################
+# Data analysis
+###############################################################################
+source(file = file.path("analysis-multiple-imputation", "mi-set-up.R"))
 
+for(.__current_idx in 1:.__total_imputed_datasets){
+  source(file.path("analysis-multiple-imputation", "analyze-one-completed-dataset", "analyze-one-completed-dataset-secondary-aim-marginal.R"))
+}
 
+for(.__current_idx in 1:.__total_imputed_datasets){
+  source(file.path("analysis-multiple-imputation", "analyze-one-completed-dataset", "analyze-one-completed-dataset-secondary-aim-moderator.R"))
+}
+
+for(.__current_idx in 1:.__total_imputed_datasets){
+  source(file.path("analysis-multiple-imputation", "analyze-one-completed-dataset", "analyze-one-completed-dataset-secondary-aim-study-day-linear.R"))
+}
+
+for(.__current_idx in 1:.__total_imputed_datasets){
+  source(file.path("analysis-multiple-imputation", "analyze-one-completed-dataset", "analyze-one-completed-dataset-secondary-aim-study-day-quadratic.R"))
+}
+
+###############################################################################
+# Pooling estimates across imputed datasets and posterior predictive checking
+###############################################################################
+source(file = file.path("analysis-multiple-imputation", "mi-set-up.R"))
+
+source(file.path("analysis-multiple-imputation", "pool-and-ppc", "pool-secondary.R"))
+
+source(file.path("analysis-multiple-imputation", "pool-and-ppc", "pool-secondary-moderator.R"))
+
+source(file.path("analysis-multiple-imputation", "pool-and-ppc", "pool-secondary-study-day-linear.R"))
+
+source(file.path("analysis-multiple-imputation", "pool-and-ppc", "pool-secondary-study-day-quadratic.R"))

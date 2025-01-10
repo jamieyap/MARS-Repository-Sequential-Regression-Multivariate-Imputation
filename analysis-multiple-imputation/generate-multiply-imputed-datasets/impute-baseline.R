@@ -75,9 +75,14 @@ meth_list[["food_security_mean"]] <- "pmm"
 meth_list[["SSSladders"]] <- "pmm"
 meth_list[["pp1_1"]] <- "pmm"
 
-# baseline agency
+# Baseline self-regulatory capacity
 meth_list[["srq_mean"]] <- "pmm"
+
+# Baseline self-efficacy
 meth_list[["SE_total"]] <- "pmm"
+
+# Baseline motivation
+meth_list[["TSAM_Total"]] <- "pmm"
 
 # baseline social support
 meth_list[["sni_count"]] <- "pmm"

@@ -26,7 +26,8 @@ these_vars <- c("age", "is_male", "has_partner", "is_latino", "is_not_latino_and
                 "baseline_tobacco_history", "Nicotine_dep", # baseline tobacco dependence
                 "income_val", "FinancialStrain", "nd_mean", "food_security_mean", "SSSladders", "pp1_1", # baseline socio-economic status
                 "srq_mean", # baseline self-regulatory capacity
-                "SE_total", # baseline self-efficacy
+                "SE_total", # baseline self-efficacy,
+                "TSAM_Total", # baseline motivation
                 "sni_count", "sni_active", "sni_people", "isel_belonging", "isel_appraisal", "isel_tangible") # baseline social support
 
 dat_baseline_wide <- dat_primary_aim %>%
@@ -52,10 +53,9 @@ if(maximum_replicate_id > 0){
 ################################################################################
 # Time-varying variables which have missing values and will be imputed
 ################################################################################
-these_vars_will_be_imputed <- c("expectancy_cig", "self_efficacy_cig", "cigarette_counts", "Y", "motivation_cig",
-                                "expectancy_cig_lag1", "self_efficacy_cig_lag1", "cigarette_counts_lag1", "Y_lag1", "motivation_cig_lag1",
-                                "expectancy_cig_mean_past24hrs", "self_efficacy_cig_mean_past24hrs", "cigarette_counts_sum_past24hrs", "Y_sum_past24hrs", "motivation_cig_mean_past24hrs",
-                                "engagement_most_recent_eligible")
+these_vars_will_be_imputed <- c("self_efficacy_cig", "cigarette_counts", "motivation_cig",
+                                "self_efficacy_cig_lag1", "cigarette_counts_lag1", "motivation_cig_lag1",
+                                "self_efficacy_cig_mean_past24hrs", "cigarette_counts_sum_past24hrs", "motivation_cig_mean_past24hrs")
 
 dat_timevarying_long_with_missing <- dat_primary_aim %>%
   select(replicate_id, participant_id, decision_point, all_of(these_vars_will_be_imputed)) %>% 
@@ -82,7 +82,8 @@ if(maximum_replicate_id > 0){
 these_vars_will_not_be_imputed <- c("any_recent_eligible_dp", "eligibility", "eligibility_lag1", "elig24hrs", 
                                     "coinflip", "is_high_effort", "is_low_effort", "matched_24hrs", "matched_recent",
                                     "days_between_v1_and_coinflip_local", "days_between_v1_and_coinflip_local_squared", "hours_elapsed_since_most_recent_eligible", "hour_coinflip_local",
-                                    "any_response_2qs", "completed_app_usage_preblock")
+                                    "any_response_2qs", 
+                                    "completed_app_usage_preblock", "completed_app_usage_preblock_lag1")
 
 dat_timevarying_long_without_missing <- dat_primary_aim %>%
   select(replicate_id, participant_id, decision_point, all_of(these_vars_will_not_be_imputed)) %>% 
@@ -97,13 +98,6 @@ dat_timevarying_long <- full_join(x = dat_timevarying_long_without_missing,
                                   by = join_by(replicate_id == replicate_id,
                                                participant_id == participant_id,
                                                decision_point == decision_point))
-
-################################################################################
-# Binary variables in dat_timevarying_long and dat_baseline_wide that will be 
-# imputed are converted from numeric to factor; this is just so that inputs
-# are compatible with what the mice package expects
-################################################################################
-dat_timevarying_long[["Y"]] <- as_factor(dat_timevarying_long[["Y"]])
 
 ################################################################################
 # Transform dataset with time-varying covariates from long to wide format

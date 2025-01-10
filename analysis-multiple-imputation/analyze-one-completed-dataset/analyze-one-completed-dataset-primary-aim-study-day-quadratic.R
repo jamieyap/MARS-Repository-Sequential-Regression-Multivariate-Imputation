@@ -53,11 +53,11 @@ dat_for_analysis <- dat_long_completed %>% filter(replicate_id == 0)
 fit1 <- tryCatch(expr = {wcls(
   data = dat_for_analysis,
   id = "participant_id",  
-  outcome = "motivation_cig",
+  outcome = "self_efficacy_cig",
   treatment = "coinflip",
   rand_prob = 0.5,
   moderator_formula = ~ days_between_v1_and_coinflip_local + I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local),  
-  control_formula = ~ 1 + days_between_v1_and_coinflip_local + I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local) + motivation_cig_lag1 + Y_lag1 + cigarette_counts_lag1, 
+  control_formula = ~ 1 + days_between_v1_and_coinflip_local + I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local) + self_efficacy_cig_lag1, 
   availability = "eligibility"
 )},
 warning = function(w){"Hey, a warning"})
@@ -85,11 +85,11 @@ for(idx_replicate in 1:max_replicate_id){
   fit1 <- tryCatch(expr = {wcls(
     data = dat_for_analysis,
     id = "participant_id",  
-    outcome = "motivation_cig",
+    outcome = "self_efficacy_cig",
     treatment = "coinflip",
     rand_prob = 0.5,
     moderator_formula = ~ days_between_v1_and_coinflip_local + I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local),  
-    control_formula = ~ 1 + days_between_v1_and_coinflip_local + I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local) + motivation_cig_lag1 + Y_lag1 + cigarette_counts_lag1, 
+    control_formula = ~ 1 + days_between_v1_and_coinflip_local + I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local) + self_efficacy_cig_lag1, 
     availability = "eligibility"
   )},
   warning = function(w){"Hey, a warning"})

@@ -57,7 +57,7 @@ fit_pooled[["LCL90"]] <- fit_pooled[["Estimate"]] - fit_pooled[["StdErr"]] * qno
 fit_pooled[["UCL90"]] <- fit_pooled[["Estimate"]] + fit_pooled[["StdErr"]] * qnorm(0.95)
 fit_pooled[["p_value"]] <- 2*pnorm(abs(fit_pooled[["Estimate"]]/fit_pooled[["StdErr"]]), lower.tail = FALSE)
 
-row.names(fit_pooled) <- c("Treatment (Prompt = 1, No Prompt = 0)", "Treatment x Prior Cigs Smoked", paste("Treatment Effect when Prior Cigs Smoked was ", 0:11, sep = ""))
+row.names(fit_pooled) <- c("Treatment (Prompt = 1, No Prompt = 0)", "Treatment x Prior Self Efficacy", paste("Treatment Effect when Prior Self Efficacy was ", 0:4, sep = ""))
 fit_pooled_causal <- fit_pooled
 print(fit_pooled_causal)
 
@@ -158,11 +158,11 @@ write.csv(dat_pbcom_formatted, file = file.path("analysis-multiple-imputation", 
 # Workflow: Plot
 ###############################################################################
 
-png(file = file.path("analysis-multiple-imputation", "formatted-output", "primary_prior_cigs_smoked.png"), width = 6, height = 6, units = "in", res = 600)
+png(file = file.path("analysis-multiple-imputation", "formatted-output", "primary_prior_self_efficacy_cig.png"), width = 6, height = 6, units = "in", res = 600)
 
-plot(0:11, fit_pooled_causal[-c(1:2),]$Estimate, type = "o", lwd = 1, ylim = c(-1,1), xlab = "Prior cigs smoked", ylab = "Treatment Effect")
-lines(0:11, fit_pooled_causal[-c(1:2),]$LCL90, type = "o", lty = 2, lwd = 1)
-lines(0:11, fit_pooled_causal[-c(1:2),]$UCL90, type = "o", lty = 2, lwd = 1)
+plot(0:4, fit_pooled_causal[-c(1:2),]$Estimate, type = "o", lwd = 1, ylim = c(-1,1), xlab = "Prior self efficacy", ylab = "Treatment Effect")
+lines(0:4, fit_pooled_causal[-c(1:2),]$LCL90, type = "o", lty = 2, lwd = 1)
+lines(0:4, fit_pooled_causal[-c(1:2),]$UCL90, type = "o", lty = 2, lwd = 1)
 abline(h = 0, lty = 2, lwd = 1, col = "red")
 
 dev.off()
