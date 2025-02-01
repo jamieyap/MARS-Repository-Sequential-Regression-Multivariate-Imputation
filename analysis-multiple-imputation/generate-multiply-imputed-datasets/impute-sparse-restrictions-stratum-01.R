@@ -110,21 +110,23 @@ my_list <- list("cigarette_counts" = NULL,
 
 this_outcome <- "cigarette_counts"
 my_list[[this_outcome]] <- c(this_outcome,
+                             "is_high_effort", "is_low_effort",
                              "baseline_tobacco_history",
                              "Nicotine_dep",
-                             "hour_coinflip_local")
+                             "any_response_2qs")
 
 this_outcome <- "motivation_cig"
 my_list[[this_outcome]] <- c(this_outcome,
+                             "is_high_effort", "is_low_effort",
                              "TSAM_Total",
-                             "hour_coinflip_local",
+                             "any_response_2qs",
                              "cigarette_counts")
 
 this_outcome <- "self_efficacy_cig"
 my_list[[this_outcome]] <- c(this_outcome,
                              "is_high_effort", "is_low_effort",
                              "SE_total",
-                             "hour_coinflip_local",
+                             "any_response_2qs",
                              "cigarette_counts",
                              "motivation_cig")
 

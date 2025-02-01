@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2024-11-27" />
+<meta name="date" content="2025-01-31" />
 
 <title>Prompt versus None</title>
 
@@ -350,7 +350,7 @@ display: none;
 
 
 <h1 class="title toc-ignore">Prompt versus None</h1>
-<h4 class="date">November 27, 2024</h4>
+<h4 class="date">January 31, 2025</h4>
 
 </div>
 
@@ -363,116 +363,72 @@ margin-right: auto;
 }
 </style>
 <pre><code>## $call
-## wcls(data = dat_for_analysis, id = &quot;participant_id&quot;, outcome = &quot;motivation_cig&quot;, 
+## wcls(data = dat_for_analysis, id = &quot;participant_id&quot;, outcome = &quot;self_efficacy_cig&quot;, 
 ##     treatment = &quot;coinflip&quot;, rand_prob = 0.5, moderator_formula = ~1, 
-##     control_formula = ~days_between_v1_and_coinflip_local + motivation_cig_lag1 + 
-##         Y_lag1 + cigarette_counts_lag1, availability = &quot;overall_elig&quot;)
+##     control_formula = ~days_between_v1_and_coinflip_local + self_efficacy_cig_lag1, 
+##     availability = &quot;overall_elig&quot;)
 ## 
 ## $causal_excursion_effect
-##                Estimate    95% LCL    95% UCL     StdErr     Wald df1 df2   p-value
-## (Intercept) -0.04854531 -0.1131419 0.01605128 0.03252457 2.227776   1  92 0.1389703
+##               Estimate     95% LCL    95% UCL     StdErr      Wald df1 df2   p-value
+## (Intercept) 0.01548434 -0.06002364 0.09099232 0.03802926 0.1657867   1  94 0.6848095
 ## 
 ## $control_variables
-##                                       Estimate     95% LCL     95% UCL      StdErr        Wald df1 df2      p-value
-## (Intercept)                         0.95378610  0.70957151 1.198000696 0.122962728  60.1665353   1  92 1.151079e-11
-## days_between_v1_and_coinflip_local  0.02782136  0.01072550 0.044917211 0.008607811  10.4465087   1  92 1.706038e-03
-## motivation_cig_lag1                 0.65245296  0.57991655 0.724989367 0.036522285 319.1409471   1  92 0.000000e+00
-## Y_lag1                              0.02842349 -0.08434043 0.141187410 0.056776948   0.2506171   1  92 6.178364e-01
-## cigarette_counts_lag1              -0.03637340 -0.07500296 0.002256164 0.019450093   3.4972318   1  92 6.465131e-02</code></pre>
+##                                      Estimate      95% LCL    95% UCL      StdErr      Wald df1 df2      p-value
+## (Intercept)                        0.92810350  0.670504830 1.18570218 0.129738420  51.17474   1  94 1.823122e-10
+## days_between_v1_and_coinflip_local 0.01563525 -0.001362989 0.03263349 0.008561087   3.33543   1  94 7.097697e-02
+## self_efficacy_cig_lag1             0.65832585  0.574692898 0.74195880 0.042121363 244.27386   1  94 0.000000e+00</code></pre>
 <pre><code>## $call
-## wcls(data = dat_for_analysis, id = &quot;participant_id&quot;, outcome = &quot;motivation_cig&quot;, 
+## wcls(data = dat_for_analysis, id = &quot;participant_id&quot;, outcome = &quot;self_efficacy_cig&quot;, 
 ##     treatment = &quot;coinflip&quot;, rand_prob = 0.5, moderator_formula = ~days_between_v1_and_coinflip_local, 
-##     control_formula = ~days_between_v1_and_coinflip_local + motivation_cig_lag1 + 
-##         Y_lag1 + cigarette_counts_lag1, availability = &quot;overall_elig&quot;)
+##     control_formula = ~days_between_v1_and_coinflip_local + self_efficacy_cig_lag1, 
+##     availability = &quot;overall_elig&quot;)
 ## 
 ## $causal_excursion_effect
-##                                       Estimate      95% LCL    95% UCL     StdErr     Wald df1 df2    p-value
-## (Intercept)                        -0.16388625 -0.354841170 0.02706867 0.09613226 2.906342   1  91 0.09164367
-## days_between_v1_and_coinflip_local  0.02334701 -0.009949609 0.05664363 0.01676249 1.939928   1  91 0.16706986
+##                                        Estimate     95% LCL   95% UCL     StdErr       Wald df1 df2   p-value
+## (Intercept)                        -0.019070782 -0.20242508 0.1642835 0.09233262 0.04266057   1  93 0.8368172
+## days_between_v1_and_coinflip_local  0.007001517 -0.02567336 0.0396764 0.01645425 0.18106232   1  93 0.6714449
 ## 
 ## $control_variables
-##                                       Estimate     95% LCL     95% UCL      StdErr        Wald df1 df2      p-value
-## (Intercept)                         0.95367839  0.70852086 1.198835926 0.123419429  59.7085911   1  91 1.401290e-11
-## days_between_v1_and_coinflip_local  0.02749359  0.01031408 0.044673098 0.008648663  10.1056666   1  91 2.020453e-03
-## motivation_cig_lag1                 0.65311155  0.58064981 0.725573285 0.036479344 320.5388554   1  91 0.000000e+00
-## Y_lag1                              0.02845844 -0.08443462 0.141351491 0.056833645   0.2507327   1  91 6.177686e-01
-## cigarette_counts_lag1              -0.03739846 -0.07612519 0.001328265 0.019496160   3.6796739   1  91 5.821488e-02</code></pre>
-<pre><code>## png 
-##   2</code></pre>
+##                                      Estimate      95% LCL    95% UCL      StdErr       Wald df1 df2      p-value
+## (Intercept)                        0.92769080  0.670378732 1.18500287 0.129575905  51.257568   1  93 1.852654e-10
+## days_between_v1_and_coinflip_local 0.01559961 -0.001408504 0.03260773 0.008564861   3.317317   1  93 7.176871e-02
+## self_efficacy_cig_lag1             0.65851373  0.575044054 0.74198341 0.042033237 245.439245   1  93 0.000000e+00</code></pre>
 <pre><code>## $call
-## wcls(data = dat_for_analysis, id = &quot;participant_id&quot;, outcome = &quot;motivation_cig&quot;, 
+## wcls(data = dat_for_analysis, id = &quot;participant_id&quot;, outcome = &quot;self_efficacy_cig&quot;, 
 ##     treatment = &quot;coinflip&quot;, rand_prob = 0.5, moderator_formula = ~days_between_v1_and_coinflip_local + 
 ##         I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local), 
 ##     control_formula = ~days_between_v1_and_coinflip_local + I(days_between_v1_and_coinflip_local * 
-##         days_between_v1_and_coinflip_local) + motivation_cig_lag1 + 
-##         Y_lag1 + cigarette_counts_lag1, availability = &quot;overall_elig&quot;)
+##         days_between_v1_and_coinflip_local) + self_efficacy_cig_lag1, 
+##     availability = &quot;overall_elig&quot;)
 ## 
 ## $causal_excursion_effect
-##                                                                                 Estimate     95% LCL    95% UCL      StdErr        Wald df1 df2   p-value
-## (Intercept)                                                                -0.1459042425 -0.52782877 0.23602028 0.192213699 0.576191926   1  89 0.4498146
-## days_between_v1_and_coinflip_local                                          0.0163682655 -0.14544721 0.17818374 0.081437950 0.040397236   1  89 0.8411645
-## I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local)  0.0006238243 -0.01462725 0.01587489 0.007675508 0.006605571   1  89 0.9354060
+##                                                                                Estimate      95% LCL    95% UCL      StdErr     Wald df1 df2   p-value
+## (Intercept)                                                                 0.180267803 -0.209298909 0.56983452 0.196119207 0.844882   1  91 0.3604343
+## days_between_v1_and_coinflip_local                                         -0.093294145 -0.265406680 0.07881839 0.086646453 1.159330   1  91 0.2844507
+## I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local)  0.009958786 -0.006431036 0.02634861 0.008251113 1.456759   1  91 0.2305745
 ## 
 ## $control_variables
-##                                                                                Estimate     95% LCL      95% UCL      StdErr        Wald df1 df2      p-value
-## (Intercept)                                                                 0.788217759  0.50026109  1.076174428 0.144921870  29.5817982   1  89 4.658263e-07
-## days_between_v1_and_coinflip_local                                          0.119081573  0.04500863  0.193154513 0.037279182  10.2036696   1  89 1.939095e-03
-## I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local) -0.009053866 -0.01606910 -0.002038634 0.003530603   6.5761312   1  89 1.201137e-02
-## motivation_cig_lag1                                                         0.648490818  0.57609780  0.720883832 0.036433714 316.8113754   1  89 0.000000e+00
-## Y_lag1                                                                      0.023412495 -0.08847697  0.135301962 0.056311357   0.1728635   1  89 6.785801e-01
-## cigarette_counts_lag1                                                      -0.034520343 -0.07373558  0.004694889 0.019736111   3.0593352   1  89 8.372198e-02</code></pre>
-<pre><code>## png 
-##   2</code></pre>
+##                                                                               Estimate     95% LCL      95% UCL      StdErr      Wald df1 df2      p-value
+## (Intercept)                                                                 0.72078129  0.44730163  0.994260952 0.137677610  27.40819   1  91 1.052326e-06
+## days_between_v1_and_coinflip_local                                          0.12644642  0.05937729  0.193515561 0.033764553  14.02462   1  91 3.160326e-04
+## I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local) -0.01102584 -0.01726473 -0.004786962 0.003140834  12.32349   1  91 6.979045e-04
+## self_efficacy_cig_lag1                                                      0.65480175  0.57159607  0.738007430 0.041888157 244.36397   1  91 0.000000e+00</code></pre>
 <pre><code>## $call
-## wcls(data = dat_for_analysis, id = &quot;participant_id&quot;, outcome = &quot;motivation_cig&quot;, 
-##     treatment = &quot;coinflip&quot;, rand_prob = 0.5, moderator_formula = ~days_between_v1_and_coinflip_local + 
-##         I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local) + 
-##         I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local * 
-##             days_between_v1_and_coinflip_local), control_formula = ~days_between_v1_and_coinflip_local + 
-##         I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local) + 
-##         I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local * 
-##             days_between_v1_and_coinflip_local) + motivation_cig_lag1 + 
-##         Y_lag1 + cigarette_counts_lag1, availability = &quot;overall_elig&quot;)
+## wcls(data = dat_for_analysis, id = &quot;participant_id&quot;, outcome = &quot;self_efficacy_cig&quot;, 
+##     treatment = &quot;coinflip&quot;, rand_prob = 0.5, moderator_formula = ~self_efficacy_cig_lag1, 
+##     control_formula = ~days_between_v1_and_coinflip_local + self_efficacy_cig_lag1, 
+##     availability = &quot;overall_elig&quot;)
 ## 
 ## $causal_excursion_effect
-##                                                                                                                     Estimate     95% LCL     95% UCL     StdErr      Wald df1 df2   p-value
-## (Intercept)                                                                                                      0.398063877 -0.41468418 1.210811932 0.40890756 0.9476659   1  87 0.3330131
-## days_between_v1_and_coinflip_local                                                                              -0.435750188 -1.03520756 0.163707185 0.30159734 2.0874696   1  87 0.1521040
-## I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local)                                       0.103143241 -0.02508454 0.231371017 0.06451361 2.5561064   1  87 0.1134945
-## I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local) -0.006783864 -0.01505913 0.001491404 0.00416343 2.6549220   1  87 0.1068455
+##                          Estimate    95% LCL    95% UCL     StdErr     Wald df1 df2   p-value
+## (Intercept)             0.1425026 -0.1382511 0.42325626 0.14138052 1.015936   1  93 0.3161004
+## self_efficacy_cig_lag1 -0.0431429 -0.1254339 0.03914805 0.04143966 1.083893   1  93 0.3005274
 ## 
 ## $control_variables
-##                                                                                                                      Estimate     95% LCL     95% UCL      StdErr         Wald df1 df2      p-value
-## (Intercept)                                                                                                      0.7841268976  0.42125517 1.146998624 0.182567023 1.844710e+01   1  87 4.528624e-05
-## days_between_v1_and_coinflip_local                                                                               0.1218108200 -0.10815094 0.351772577 0.115697725 1.108465e+00   1  87 2.953312e-01
-## I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local)                                      -0.0096297928 -0.06098467 0.041725085 0.025837525 1.389095e-01   1  87 7.102739e-01
-## I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local)  0.0000366836 -0.00337790 0.003451267 0.001717936 4.559633e-04   1  87 9.830127e-01
-## motivation_cig_lag1                                                                                              0.6482064497  0.57573236 0.720680543 0.036462966 3.160259e+02   1  87 0.000000e+00
-## Y_lag1                                                                                                           0.0238296937 -0.08794436 0.135603750 0.056235455 1.795628e-01   1  87 6.727950e-01
-## cigarette_counts_lag1                                                                                           -0.0340559188 -0.07307157 0.004959733 0.019629447 3.010018e+00   1  87 8.629263e-02</code></pre>
-<pre><code>## png 
-##   2</code></pre>
-<pre><code>## $call
-## wcls(data = dat_for_analysis, id = &quot;participant_id&quot;, outcome = &quot;motivation_cig&quot;, 
-##     treatment = &quot;coinflip&quot;, rand_prob = 0.5, moderator_formula = ~cigarette_counts_lag1, 
-##     control_formula = ~days_between_v1_and_coinflip_local + motivation_cig_lag1 + 
-##         Y_lag1 + cigarette_counts_lag1, availability = &quot;overall_elig&quot;)
-## 
-## $causal_excursion_effect
-##                           Estimate     95% LCL      95% UCL     StdErr        Wald df1 df2    p-value
-## (Intercept)            0.001536018 -0.06841022  0.071482259 0.03521297 0.001902775   1  91 0.96530223
-## cigarette_counts_lag1 -0.087545337 -0.16700862 -0.008082056 0.04000413 4.789128358   1  91 0.03120049
-## 
-## $control_variables
-##                                       Estimate     95% LCL     95% UCL      StdErr       Wald df1 df2      p-value
-## (Intercept)                         0.95545571  0.71131493 1.199596478 0.122907561  60.431575   1  91 1.123213e-11
-## days_between_v1_and_coinflip_local  0.02852213  0.01140502 0.045639235 0.008617251  10.955351   1  91 1.338745e-03
-## motivation_cig_lag1                 0.65027843  0.57777409 0.722782766 0.036500791 317.390653   1  91 0.000000e+00
-## Y_lag1                              0.03505644 -0.07703790 0.147150773 0.056431547   0.385915   1  91 5.360075e-01
-## cigarette_counts_lag1              -0.04024424 -0.08464903 0.004160554 0.022354662   3.240941   1  91 7.513275e-02</code></pre>
-<pre><code>## png 
-##   2</code></pre>
-<pre><code>## [1] TRUE</code></pre>
+##                                      Estimate      95% LCL    95% UCL     StdErr       Wald df1 df2      p-value
+## (Intercept)                        0.92665287  0.670137591 1.18316815 0.12917466  51.461149   1  93 1.732968e-10
+## days_between_v1_and_coinflip_local 0.01532505 -0.001651624 0.03230173 0.00854903   3.213442   1  93 7.628709e-02
+## self_efficacy_cig_lag1             0.65924930  0.576152837 0.74234576 0.04184529 248.202475   1  93 0.000000e+00</code></pre>
 
 
 

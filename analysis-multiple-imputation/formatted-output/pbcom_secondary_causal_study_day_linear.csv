@@ -1,0 +1,7 @@
+"","pbcom_est","pbcom_stderr"
+"is_high_effort","0.520","0.673"
+"is_low_effort","0.627","0.713"
+"I(is_high_effort * days_between_v1_and_coinflip_local)","0.427","0.273"
+"I(is_low_effort * days_between_v1_and_coinflip_local)","0.353","0.707"
+"High Effort Prompt vs Low Effort Prompt","0.433","0.740"
+"High Effort Prompt vs Low Effort Prompt x Day","0.640","0.487"

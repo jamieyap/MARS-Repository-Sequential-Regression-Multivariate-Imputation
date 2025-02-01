@@ -1,0 +1,321 @@
+---
+title: "High effort prompt versus low effort prompt"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document:
+    toc: TRUE
+    toc_depth: 4
+    number_sections: TRUE
+---
+
+<style type="text/css">
+.main-container {
+  max-width: 1800px !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(tidy = TRUE)
+knitr::opts_chunk$set(fig.pos = 'H')
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE)
+options(width = 7000)
+```
+
+```{r}
+source("paths.R")
+library(knitr)
+library(tidyverse)
+library(geepack)
+```
+
+```{r}
+dat_primary_aim <- readRDS(file = file.path(path_multiple_imputation_pipeline_data, "dat_primary_aim_for_new_pipeline.rds"))
+```
+
+```{r}
+dat_primary_aim <- dat_primary_aim %>%
+  group_by(participant_id) %>%
+  mutate(eligibility_lag1 = lag(eligibility),
+         self_efficacy_cig_lag1 = lag(self_efficacy_cig)) %>%
+  ungroup(.)
+
+dat_for_analysis <- dat_primary_aim %>%
+  filter((eligibility == 1) & (eligibility_lag1 == 1)) %>%
+  filter((decision_point >= 7) & (decision_point <= 54))
+```
+
+```{r}
+dat_for_analysis_elig <- dat_for_analysis %>% filter(eligibility == 1)
+
+dat_for_analysis_cc <- dat_for_analysis_elig %>% 
+  select(participant_id, decision_point, 
+         self_efficacy_cig, 
+         days_between_v1_and_coinflip_local, self_efficacy_cig_lag1, 
+         is_high_effort, is_low_effort) %>% 
+  filter(complete.cases(.))
+```
+
+```{r}
+fit1 <- geeglm(self_efficacy_cig ~ days_between_v1_and_coinflip_local + self_efficacy_cig_lag1 + is_high_effort + is_low_effort, 
+               family = gaussian, 
+               data = dat_for_analysis_cc, 
+               id = participant_id, 
+               waves = decision_point)
+```
+
+```{r}
+Lmat <- matrix(c(0, 0, 0, 1,-1), ncol = 5, byrow = TRUE)
+est_contrast <- Lmat %*% fit1$coefficients
+est_std_err_contrast <- sqrt(diag(Lmat %*% vcov(fit1) %*% t(Lmat)))
+
+dat_results <- summary(fit1)[["coefficients"]]
+dat_results[["Wald"]] <- sqrt(dat_results[["Wald"]])
+colnames(dat_results) <- c("est", "std_err", "Z_statistic", "p_value")
+
+dat_contrast <- data.frame(est = est_contrast,
+                           std_err = est_std_err_contrast,
+                           Z_statistic = NA,
+                           p_value = NA)
+dat_contrast[["Z_statistic"]] <- dat_contrast[["est"]]/dat_contrast[["std_err"]]
+dat_contrast[["p_value"]] <- 2*pnorm(abs(dat_contrast[["Z_statistic"]]), lower.tail = FALSE)
+row.names(dat_contrast) <- c("High Effort Prompt vs Low Effort Prompt")
+
+results_obj <- rbind(dat_results, dat_contrast)
+
+print(round(results_obj, 3))
+```
+
+```{r}
+dat_out <- results_obj %>% rename(Estimate = est, StdErr = std_err)
+
+dat_out[["LCL"]] <- dat_out[["Estimate"]] - dat_out[["StdErr"]] * qnorm(0.975)
+dat_out[["UCL"]] <- dat_out[["Estimate"]] + dat_out[["StdErr"]] * qnorm(0.975)
+dat_out[["LCL90"]] <- dat_out[["Estimate"]] - dat_out[["StdErr"]] * qnorm(0.95)
+dat_out[["UCL90"]] <- dat_out[["Estimate"]] + dat_out[["StdErr"]] * qnorm(0.95)
+dat_out[["p_value"]] <- 2*pnorm(abs(dat_out[["Estimate"]]/dat_out[["StdErr"]]), lower.tail = FALSE)
+
+# Format output to 5 decimal places
+dat_out %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("analysis-complete-case", "formatted-output", "secondary_marginal.csv"), row.names = TRUE)
+```
+
+```{r}
+fit1 <- geeglm(self_efficacy_cig ~ days_between_v1_and_coinflip_local + self_efficacy_cig_lag1 + is_high_effort + is_low_effort + I(is_high_effort*days_between_v1_and_coinflip_local) + I(is_low_effort*days_between_v1_and_coinflip_local), 
+               family = gaussian, 
+               data = dat_for_analysis_cc, 
+               id = participant_id, 
+               waves = decision_point)
+```
+
+```{r}
+Lmat <- matrix(c(0, 0, 0, 1,-1, 0, 0,
+                 0, 0, 0, 0, 0, 1, -1), 
+               ncol = 7, byrow = TRUE)
+est_contrast <- Lmat %*% fit1$coefficients
+est_std_err_contrast <- sqrt(diag(Lmat %*% vcov(fit1) %*% t(Lmat)))
+
+dat_results <- summary(fit1)[["coefficients"]]
+dat_results[["Wald"]] <- sqrt(dat_results[["Wald"]])
+colnames(dat_results) <- c("est", "std_err", "Z_statistic", "p_value")
+
+dat_contrast <- data.frame(est = est_contrast,
+                           std_err = est_std_err_contrast,
+                           Z_statistic = NA,
+                           p_value = NA)
+dat_contrast[["Z_statistic"]] <- dat_contrast[["est"]]/dat_contrast[["std_err"]]
+dat_contrast[["p_value"]] <- 2*pnorm(abs(dat_contrast[["Z_statistic"]]), lower.tail = FALSE)
+row.names(dat_contrast) <- c("High Effort Prompt vs Low Effort Prompt", "High Effort Prompt vs Low Effort Prompt x Day")
+
+results_obj <- rbind(dat_results, dat_contrast)
+
+print(round(results_obj, 3))
+```
+```{r}
+dat_out <- results_obj %>% rename(Estimate = est, StdErr = std_err)
+
+dat_out[["LCL"]] <- dat_out[["Estimate"]] - dat_out[["StdErr"]] * qnorm(0.975)
+dat_out[["UCL"]] <- dat_out[["Estimate"]] + dat_out[["StdErr"]] * qnorm(0.975)
+dat_out[["LCL90"]] <- dat_out[["Estimate"]] - dat_out[["StdErr"]] * qnorm(0.95)
+dat_out[["UCL90"]] <- dat_out[["Estimate"]] + dat_out[["StdErr"]] * qnorm(0.95)
+dat_out[["p_value"]] <- 2*pnorm(abs(dat_out[["Estimate"]]/dat_out[["StdErr"]]), lower.tail = FALSE)
+
+# Format output to 5 decimal places
+dat_out %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("analysis-complete-case", "formatted-output", "secondary_study_day_linear.csv"), row.names = TRUE)
+```
+
+```{r}
+fit1 <- geeglm(self_efficacy_cig ~ days_between_v1_and_coinflip_local + I(days_between_v1_and_coinflip_local*days_between_v1_and_coinflip_local) + self_efficacy_cig_lag1 + is_high_effort + is_low_effort + I(is_high_effort*days_between_v1_and_coinflip_local) + I(is_low_effort*days_between_v1_and_coinflip_local) + I(is_high_effort*days_between_v1_and_coinflip_local*days_between_v1_and_coinflip_local) + I(is_low_effort*days_between_v1_and_coinflip_local*days_between_v1_and_coinflip_local), 
+               family = gaussian, 
+               data = dat_for_analysis_cc, 
+               id = participant_id, 
+               waves = decision_point)
+```
+
+```{r}
+Lmat <- matrix(c(0, 0, 0, 0, 1,-1, 0, 0, 0,  0,
+                 0, 0, 0, 0, 0, 0, 1, -1, 0, 0,
+                 0, 0, 0, 0, 0, 0, 0,  0, 1, -1,
+                 # High vs. Low on Day t
+                 0, 0, 0, 0, 1,-1, 1, -1, 1, -1,
+                 0, 0, 0, 0, 1,-1, 2, -2, 4, -4,
+                 0, 0, 0, 0, 1,-1, 3, -3, 9, -9,
+                 0, 0, 0, 0, 1,-1, 4, -4, 16, -16,
+                 0, 0, 0, 0, 1,-1, 5, -5, 25, -25,
+                 0, 0, 0, 0, 1,-1, 6, -6, 36, -36,
+                 0, 0, 0, 0, 1,-1, 7, -7, 49, -49,
+                 0, 0, 0, 0, 1,-1, 8, -8, 64, -64,
+                 # Low vs None on Day t
+                 0, 0, 0, 0, 0, 1, 0, 1, 0,   1,
+                 0, 0, 0, 0, 0, 1, 0, 2, 0, 2*2,
+                 0, 0, 0, 0, 0, 1, 0, 3, 0, 3*3,
+                 0, 0, 0, 0, 0, 1, 0, 4, 0, 4*4,
+                 0, 0, 0, 0, 0, 1, 0, 5, 0, 5*5,
+                 0, 0, 0, 0, 0, 1, 0, 6, 0, 6*6,
+                 0, 0, 0, 0, 0, 1, 0, 7, 0, 7*7,
+                 0, 0, 0, 0, 0, 1, 0, 8, 0, 8*8,
+                 # High vs None on Day t
+                 0, 0, 0, 0, 1, 0, 1, 0, 1,   0,
+                 0, 0, 0, 0, 1, 0, 2, 0, 2*2, 0,
+                 0, 0, 0, 0, 1, 0, 3, 0, 3*3, 0,
+                 0, 0, 0, 0, 1, 0, 4, 0, 4*4, 0,
+                 0, 0, 0, 0, 1, 0, 5, 0, 5*5, 0,
+                 0, 0, 0, 0, 1, 0, 6, 0, 6*6, 0,
+                 0, 0, 0, 0, 1, 0, 7, 0, 7*7, 0,
+                 0, 0, 0, 0, 1, 0, 8, 0, 8*8, 0), 
+               ncol = 10, byrow = TRUE)
+est_contrast <- Lmat %*% fit1$coefficients
+est_std_err_contrast <- sqrt(diag(Lmat %*% vcov(fit1) %*% t(Lmat)))
+
+dat_results <- summary(fit1)[["coefficients"]]
+dat_results[["Wald"]] <- sqrt(dat_results[["Wald"]])
+colnames(dat_results) <- c("est", "std_err", "Z_statistic", "p_value")
+
+dat_contrast <- data.frame(est = est_contrast,
+                           std_err = est_std_err_contrast,
+                           Z_statistic = NA,
+                           p_value = NA)
+dat_contrast[["Z_statistic"]] <- dat_contrast[["est"]]/dat_contrast[["std_err"]]
+dat_contrast[["p_value"]] <- 2*pnorm(abs(dat_contrast[["Z_statistic"]]), lower.tail = FALSE)
+row.names(dat_contrast) <- c("High Effort Prompt vs Low Effort Prompt", "High Effort Prompt vs Low Effort Prompt x Day", "High Effort Prompt vs Low Effort Prompt x Day Squared",
+                             "High Effort Prompt vs. Low Effort Prompt: Day 1",
+                             "High Effort Prompt vs. Low Effort Prompt: Day 2",
+                             "High Effort Prompt vs. Low Effort Prompt: Day 3",
+                             "High Effort Prompt vs. Low Effort Prompt: Day 4",
+                             "High Effort Prompt vs. Low Effort Prompt: Day 5",
+                             "High Effort Prompt vs. Low Effort Prompt: Day 6",
+                             "High Effort Prompt vs. Low Effort Prompt: Day 7",
+                             "High Effort Prompt vs. Low Effort Prompt: Day 8",
+                             "Low Effort Prompt vs. No Prompt: Day 1",
+                             "Low Effort Prompt vs. No Prompt: Day 2",
+                             "Low Effort Prompt vs. No Prompt: Day 3",
+                             "Low Effort Prompt vs. No Prompt: Day 4",
+                             "Low Effort Prompt vs. No Prompt: Day 5",
+                             "Low Effort Prompt vs. No Prompt: Day 6",
+                             "Low Effort Prompt vs. No Prompt: Day 7",
+                             "Low Effort Prompt vs. No Prompt: Day 8",
+                             "High Effort Prompt vs. No Prompt: Day 1",
+                             "High Effort Prompt vs. No Prompt: Day 2",
+                             "High Effort Prompt vs. No Prompt: Day 3",
+                             "High Effort Prompt vs. No Prompt: Day 4",
+                             "High Effort Prompt vs. No Prompt: Day 5",
+                             "High Effort Prompt vs. No Prompt: Day 6",
+                             "High Effort Prompt vs. No Prompt: Day 7",
+                             "High Effort Prompt vs. No Prompt: Day 8")
+
+results_obj <- rbind(dat_results, dat_contrast)
+
+print(round(results_obj, 3))
+```
+
+```{r}
+dat_out <- results_obj %>% rename(Estimate = est, StdErr = std_err)
+
+dat_out[["LCL"]] <- dat_out[["Estimate"]] - dat_out[["StdErr"]] * qnorm(0.975)
+dat_out[["UCL"]] <- dat_out[["Estimate"]] + dat_out[["StdErr"]] * qnorm(0.975)
+dat_out[["LCL90"]] <- dat_out[["Estimate"]] - dat_out[["StdErr"]] * qnorm(0.95)
+dat_out[["UCL90"]] <- dat_out[["Estimate"]] + dat_out[["StdErr"]] * qnorm(0.95)
+dat_out[["p_value"]] <- 2*pnorm(abs(dat_out[["Estimate"]]/dat_out[["StdErr"]]), lower.tail = FALSE)
+
+# Format output to 5 decimal places
+dat_out %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("analysis-complete-case", "formatted-output", "secondary_study_day_quadratic.csv"), row.names = TRUE)
+```
+
+```{r}
+fit1 <- geeglm(self_efficacy_cig ~ days_between_v1_and_coinflip_local + self_efficacy_cig_lag1 + is_high_effort + is_low_effort + I(is_high_effort*self_efficacy_cig_lag1) + I(is_low_effort*self_efficacy_cig_lag1), 
+               family = gaussian, 
+               data = dat_for_analysis_cc, 
+               id = participant_id, 
+               waves = decision_point)
+```
+
+```{r}
+Lmat <- matrix(c(0, 0, 0, 1,-1, 0, 0,
+                 0, 0, 0, 0, 0, 1, -1,
+                 # High versus Low: self-efficacy = x
+                 0, 0, 0, 1,-1, 0,  0,
+                 0, 0, 0, 1,-1, 1, -1,
+                 0, 0, 0, 1,-1, 2, -2,
+                 0, 0, 0, 1,-1, 3, -3,
+                 0, 0, 0, 1,-1, 4, -4,
+                 # Low versus None: self-efficacy = x
+                 0, 0, 0, 0, 1, 0, 0,
+                 0, 0, 0, 0, 1, 0, 1,
+                 0, 0, 0, 0, 1, 0, 2,
+                 0, 0, 0, 0, 1, 0, 3,
+                 0, 0, 0, 0, 1, 0, 4,
+                 # High versus None: self-efficacy = x
+                 0, 0, 0, 1, 0, 0, 0,
+                 0, 0, 0, 1, 0, 1, 0,
+                 0, 0, 0, 1, 0, 2, 0,
+                 0, 0, 0, 1, 0, 3, 0,
+                 0, 0, 0, 1, 0, 4, 0), 
+               ncol = 7, byrow = TRUE)
+est_contrast <- Lmat %*% fit1$coefficients
+est_std_err_contrast <- sqrt(diag(Lmat %*% vcov(fit1) %*% t(Lmat)))
+
+dat_results <- summary(fit1)[["coefficients"]]
+dat_results[["Wald"]] <- sqrt(dat_results[["Wald"]])
+colnames(dat_results) <- c("est", "std_err", "Z_statistic", "p_value")
+
+dat_contrast <- data.frame(est = est_contrast,
+                           std_err = est_std_err_contrast,
+                           Z_statistic = NA,
+                           p_value = NA)
+dat_contrast[["Z_statistic"]] <- dat_contrast[["est"]]/dat_contrast[["std_err"]]
+dat_contrast[["p_value"]] <- 2*pnorm(abs(dat_contrast[["Z_statistic"]]), lower.tail = FALSE)
+row.names(dat_contrast) <- c("High Effort Prompt vs Low Effort Prompt", "High Effort Prompt vs Low Effort Prompt x Moderator",
+                             "High vs Low: self-efficacy = 0",
+                             "High vs Low: self-efficacy = 1",
+                             "High vs Low: self-efficacy = 2",
+                             "High vs Low: self-efficacy = 3",
+                             "High vs Low: self-efficacy = 4",
+                             "Low vs None: self-efficacy = 0",
+                             "Low vs None: self-efficacy = 1",
+                             "Low vs None: self-efficacy = 2",
+                             "Low vs None: self-efficacy = 3",
+                             "Low vs None: self-efficacy = 4",
+                             "High vs None: self-efficacy = 0",
+                             "High vs None: self-efficacy = 1",
+                             "High vs None: self-efficacy = 2",
+                             "High vs None: self-efficacy = 3",
+                             "High vs None: self-efficacy = 4")
+
+results_obj <- rbind(dat_results, dat_contrast)
+
+print(round(results_obj, 3))
+```
+```{r}
+dat_out <- results_obj %>% rename(Estimate = est, StdErr = std_err)
+
+dat_out[["LCL"]] <- dat_out[["Estimate"]] - dat_out[["StdErr"]] * qnorm(0.975)
+dat_out[["UCL"]] <- dat_out[["Estimate"]] + dat_out[["StdErr"]] * qnorm(0.975)
+dat_out[["LCL90"]] <- dat_out[["Estimate"]] - dat_out[["StdErr"]] * qnorm(0.95)
+dat_out[["UCL90"]] <- dat_out[["Estimate"]] + dat_out[["StdErr"]] * qnorm(0.95)
+dat_out[["p_value"]] <- 2*pnorm(abs(dat_out[["Estimate"]]/dat_out[["StdErr"]]), lower.tail = FALSE)
+
+# Format output to 5 decimal places
+dat_out %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("analysis-complete-case", "formatted-output", "secondary_moderator.csv"), row.names = TRUE)
+```
+
+

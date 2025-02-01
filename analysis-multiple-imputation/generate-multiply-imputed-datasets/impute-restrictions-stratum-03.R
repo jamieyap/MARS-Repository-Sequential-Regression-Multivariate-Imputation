@@ -392,32 +392,44 @@ my_list <- list("cigarette_counts" = NULL,
                 "self_efficacy_cig" = NULL)
 
 this_outcome <- "cigarette_counts"
-my_list[[this_outcome]] <- c(paste(this_outcome, suffix, sep = ""),
+my_list[[this_outcome]] <- c(paste(c(this_outcome, "is_high_effort", "is_low_effort"), suffix, sep = ""),
+                             # Baseline covariates
                              "baseline_tobacco_history", "Nicotine_dep",
+                             # Time-varying covariates using subset of history - always defined
+                             paste("any_response_2qs", suffix, sep = ""),
+                             # Time-varying covariates using subset of history - not always defined
+                             paste("completed_app_usage_preblock", "_lag1", suffix, sep = ""),
                              paste(this_outcome, "_sum_past24hrs", suffix, sep = ""),
                              paste(this_outcome, "_lag1", suffix, sep = ""),
-                             paste("completed_app_usage_preblock", "_lag1", suffix, sep = ""),
                              paste("motivation_cig", "_mean_past24hrs", suffix, sep = ""),
-                             paste("self_efficacy", "_mean_past24hrs", suffix, sep = ""))
+                             paste("self_efficacy_cig", "_mean_past24hrs", suffix, sep = ""))
 
 this_outcome <- "motivation_cig"
-my_list[[this_outcome]] <- c(paste(this_outcome, suffix, sep = ""),
+my_list[[this_outcome]] <- c(paste(c(this_outcome, "is_high_effort", "is_low_effort"), suffix, sep = ""),
+                             paste("cigarette_counts", suffix, sep = ""),
+                             # Baseline covariates
                              "TSAM_Total",
+                             # Time-varying covariates using subset of history - always defined
+                             paste("any_response_2qs", suffix, sep = ""),
+                             # Time-varying covariates using subset of history - not always defined
+                             paste("completed_app_usage_preblock", "_lag1", suffix, sep = ""),
                              paste(this_outcome, "_mean_past24hrs", suffix, sep = ""),
                              paste(this_outcome, "_lag1", suffix, sep = ""),
-                             paste("cigarette_counts", suffix, sep = ""),
-                             paste("completed_app_usage_preblock", "_lag1", suffix, sep = ""),
                              paste("cigarette_counts", "_sum_past24hrs", suffix, sep = ""),
-                             paste("self_efficacy", "_mean_past24hrs", suffix, sep = ""))
+                             paste("self_efficacy_cig", "_mean_past24hrs", suffix, sep = ""))
 
 this_outcome <- "self_efficacy_cig"
 my_list[[this_outcome]] <- c(paste(c(this_outcome, "is_high_effort", "is_low_effort"), suffix, sep = ""),
-                             "SE_total",
-                             paste(this_outcome, "_mean_past24hrs", suffix, sep = ""),
-                             paste(this_outcome, "_lag1", suffix, sep = ""),
                              paste("cigarette_counts", suffix, sep = ""),
                              paste("motivation_cig", suffix, sep = ""),
+                             # Baseline covariates
+                             "SE_total",
+                             # Time-varying covariates using subset of history - always defined
+                             paste("any_response_2qs", suffix, sep = ""),
+                             # Time-varying covariates using subset of history - not always defined
                              paste("completed_app_usage_preblock", "_lag1", suffix, sep = ""),
+                             paste(this_outcome, "_mean_past24hrs", suffix, sep = ""),
+                             paste(this_outcome, "_lag1", suffix, sep = ""),
                              paste("motivation_cig", "_mean_past24hrs", suffix, sep = ""),
                              paste("cigarette_counts", "_sum_past24hrs", suffix, sep = ""))
 
@@ -960,8 +972,11 @@ if(which_penalty == "BIC"){
 }
 
 # Add two-way interactions that we would like to include in the imputation model
-rows_meet_restriction[[paste("high_effort_times_self_efficacy_lag1", suffix, sep = "")]] <- rows_meet_restriction[[paste("is_high_effort", suffix, sep = "")]] * rows_meet_restriction[[paste("self_efficacy_cig_lag1", suffix, sep = "")]] 
-rows_meet_restriction[[paste("low_effort_times_self_efficacy_lag1", suffix, sep = "")]] <- rows_meet_restriction[[paste("is_low_effort", suffix, sep = "")]] * rows_meet_restriction[[paste("self_efficacy_cig_lag1", suffix, sep = "")]]
+rows_meet_restriction[[paste("high_effort_times_self_efficacy_cig_lag1", suffix, sep = "")]] <- rows_meet_restriction[[paste("is_high_effort", suffix, sep = "")]] * rows_meet_restriction[[paste("self_efficacy_cig_lag1", suffix, sep = "")]] 
+rows_meet_restriction[[paste("low_effort_times_self_efficacy_cig_lag1", suffix, sep = "")]] <- rows_meet_restriction[[paste("is_low_effort", suffix, sep = "")]] * rows_meet_restriction[[paste("self_efficacy_cig_lag1", suffix, sep = "")]]
+
+rows_meet_restriction[[paste("high_effort_times_self_efficacy_cig_mean_past24hrs", suffix, sep = "")]] <- rows_meet_restriction[[paste("is_high_effort", suffix, sep = "")]] * rows_meet_restriction[[paste("self_efficacy_cig_mean_past24hrs", suffix, sep = "")]] 
+rows_meet_restriction[[paste("low_effort_times_self_efficacy_cig_mean_past24hrs", suffix, sep = "")]] <- rows_meet_restriction[[paste("is_low_effort", suffix, sep = "")]] * rows_meet_restriction[[paste("self_efficacy_cig_mean_past24hrs", suffix, sep = "")]]
 
 # Initialize list and matrix which will store imputation method and formula ---
 dummy_list <- as.list(colnames(rows_meet_restriction))
@@ -978,12 +993,14 @@ consider_these_vars <- my_list[[which(names(my_list) == this_outcome)]]
 
 dat_for_variable_selection <- rows_meet_restriction %>% filter(replicate_id == 0) %>% 
   select(all_of(consider_these_vars), 
-         paste("high_effort_times_self_efficacy_lag1", suffix, sep = ""), paste("low_effort_times_self_efficacy_lag1", suffix, sep = ""))
+         paste("high_effort_times_self_efficacy_cig_lag1", suffix, sep = ""), paste("low_effort_times_self_efficacy_cig_lag1", suffix, sep = ""),
+         paste("high_effort_times_self_efficacy_cig_mean_past24hrs", suffix, sep = ""), paste("low_effort_times_self_efficacy_cig_mean_past24hrs", suffix, sep = ""))
 
 fit <- tryCatch(expr = {glm(as.formula(paste(LHS, 
                                              paste("~ ", "is_high_effort", suffix, "+", "is_low_effort", suffix, "+", 
                                                    "self_efficacy_cig_lag1", suffix, "+", 
-                                                   paste("high_effort_times_self_efficacy_lag1", suffix, sep = ""), "+", paste("low_effort_times_self_efficacy_lag1", suffix, sep = ""), "+",
+                                                   paste("high_effort_times_self_efficacy_cig_lag1", suffix, sep = ""), "+", paste("low_effort_times_self_efficacy_cig_lag1", suffix, sep = ""), "+",
+                                                   paste("high_effort_times_self_efficacy_cig_mean_past24hrs", suffix, sep = ""), "+", paste("low_effort_times_self_efficacy_cig_mean_past24hrs", suffix, sep = ""), "+",
                                                    sep = ""),
                                              "+.",
                                              sep = "")), 
@@ -1012,7 +1029,7 @@ if(check_convergence_result == TRUE){
             scope = list(lower = as.formula(paste(LHS, 
                                                   paste("~ ", "is_high_effort", suffix, "+", "is_low_effort", suffix, "+", 
                                                         "self_efficacy_cig_lag1", suffix, "+", 
-                                                        paste("high_effort_times_self_efficacy_lag1", suffix, sep = ""), "+", paste("low_effort_times_self_efficacy_lag1", suffix, sep = ""),
+                                                        paste("high_effort_times_self_efficacy_cig_lag1", suffix, sep = ""), "+", paste("low_effort_times_self_efficacy_cig_lag1", suffix, sep = ""),
                                                         sep = ""), sep = "")),
                          upper = fit$formula),
             trace = FALSE, 
@@ -1090,8 +1107,11 @@ if(class(rows_meet_restriction_completed[[LHS]]) == "factor"){
   rows_meet_restriction_completed[[LHS]] <- as.numeric(rows_meet_restriction_completed[[LHS]]) - 1
 }
 
-rows_meet_restriction_completed[[paste("high_effort_times_self_efficacy_lag1", suffix, sep = "")]] <- NULL
-rows_meet_restriction_completed[[paste("low_effort_times_self_efficacy_lag1", suffix, sep = "")]] <- NULL
+rows_meet_restriction_completed[[paste("high_effort_times_self_efficacy_cig_lag1", suffix, sep = "")]] <- NULL
+rows_meet_restriction_completed[[paste("low_effort_times_self_efficacy_cig_lag1", suffix, sep = "")]] <- NULL
+
+rows_meet_restriction_completed[[paste("high_effort_times_self_efficacy_cig_mean_past24hrs", suffix, sep = "")]] <- NULL
+rows_meet_restriction_completed[[paste("low_effort_times_self_efficacy_cig_mean_past24hrs", suffix, sep = "")]] <- NULL
 
 # Before we move on to the next variable...
 list_collect_data <- append(list_collect_data, list(rows_meet_restriction_completed))

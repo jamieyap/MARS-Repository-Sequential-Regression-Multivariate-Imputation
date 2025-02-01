@@ -154,19 +154,3 @@ write.csv(fit_pooled_causal_formatted, file = file.path("analysis-multiple-imput
 write.csv(fit_pooled_control_formatted, file = file.path("analysis-multiple-imputation", "formatted-output", "pooled_primary_control_moderator.csv"), row.names = TRUE)
 write.csv(dat_pbcom_formatted, file = file.path("analysis-multiple-imputation", "formatted-output", "pbcom_primary_moderator.csv"), row.names = TRUE)
 
-###############################################################################
-# Workflow: Plot
-###############################################################################
-
-png(file = file.path("analysis-multiple-imputation", "formatted-output", "primary_prior_self_efficacy_cig.png"), width = 6, height = 6, units = "in", res = 600)
-
-plot(0:4, fit_pooled_causal[-c(1:2),]$Estimate, type = "o", lwd = 1, ylim = c(-1,1), xlab = "Prior self efficacy", ylab = "Treatment Effect")
-lines(0:4, fit_pooled_causal[-c(1:2),]$LCL90, type = "o", lty = 2, lwd = 1)
-lines(0:4, fit_pooled_causal[-c(1:2),]$UCL90, type = "o", lty = 2, lwd = 1)
-abline(h = 0, lty = 2, lwd = 1, col = "red")
-
-dev.off()
-
-if(file.exists("analysis-multiple-imputation/formatted-output/Thumbs.db")){
-  file.remove("analysis-multiple-imputation/formatted-output/Thumbs.db")
-}

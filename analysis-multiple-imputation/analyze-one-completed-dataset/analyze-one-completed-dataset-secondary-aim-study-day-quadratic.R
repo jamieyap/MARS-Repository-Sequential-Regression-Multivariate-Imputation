@@ -57,9 +57,36 @@ fit1 <- geeglm(self_efficacy_cig ~ days_between_v1_and_coinflip_local + I(days_b
                id = participant_id, 
                waves = decision_point)
 
-Lmat <- matrix(c(0, 0, 0, 0, 1,-1, 0, 0, 0, 0,
+Lmat <- matrix(c(0, 0, 0, 0, 1,-1, 0, 0, 0,  0,
                  0, 0, 0, 0, 0, 0, 1, -1, 0, 0,
-                 0, 0, 0, 0, 0, 0, 0, 0, 1, -1), 
+                 0, 0, 0, 0, 0, 0, 0,  0, 1, -1,
+                 # High vs. Low on Day t
+                 0, 0, 0, 0, 1,-1, 1, -1, 1, -1,
+                 0, 0, 0, 0, 1,-1, 2, -2, 4, -4,
+                 0, 0, 0, 0, 1,-1, 3, -3, 9, -9,
+                 0, 0, 0, 0, 1,-1, 4, -4, 16, -16,
+                 0, 0, 0, 0, 1,-1, 5, -5, 25, -25,
+                 0, 0, 0, 0, 1,-1, 6, -6, 36, -36,
+                 0, 0, 0, 0, 1,-1, 7, -7, 49, -49,
+                 0, 0, 0, 0, 1,-1, 8, -8, 64, -64,
+                 # Low vs None on Day t
+                 0, 0, 0, 0, 0, 1, 0, 1, 0,   1,
+                 0, 0, 0, 0, 0, 1, 0, 2, 0, 2*2,
+                 0, 0, 0, 0, 0, 1, 0, 3, 0, 3*3,
+                 0, 0, 0, 0, 0, 1, 0, 4, 0, 4*4,
+                 0, 0, 0, 0, 0, 1, 0, 5, 0, 5*5,
+                 0, 0, 0, 0, 0, 1, 0, 6, 0, 6*6,
+                 0, 0, 0, 0, 0, 1, 0, 7, 0, 7*7,
+                 0, 0, 0, 0, 0, 1, 0, 8, 0, 8*8,
+                 # High vs None on Day t
+                 0, 0, 0, 0, 1, 0, 1, 0, 1,   0,
+                 0, 0, 0, 0, 1, 0, 2, 0, 2*2, 0,
+                 0, 0, 0, 0, 1, 0, 3, 0, 3*3, 0,
+                 0, 0, 0, 0, 1, 0, 4, 0, 4*4, 0,
+                 0, 0, 0, 0, 1, 0, 5, 0, 5*5, 0,
+                 0, 0, 0, 0, 1, 0, 6, 0, 6*6, 0,
+                 0, 0, 0, 0, 1, 0, 7, 0, 7*7, 0,
+                 0, 0, 0, 0, 1, 0, 8, 0, 8*8, 0), 
                ncol = 10, byrow = TRUE)
 est_contrast <- Lmat %*% fit1$coefficients
 est_std_err_contrast <- sqrt(diag(Lmat %*% vcov(fit1) %*% t(Lmat)))
@@ -74,7 +101,31 @@ dat_contrast <- data.frame(est = est_contrast,
                            p_value = NA)
 dat_contrast[["Z_statistic"]] <- dat_contrast[["est"]]/dat_contrast[["std_err"]]
 dat_contrast[["p_value"]] <- 2*pnorm(abs(dat_contrast[["Z_statistic"]]), lower.tail = FALSE)
-row.names(dat_contrast) <- c("High Effort Prompt vs Low Effort Prompt", "High Effort Prompt vs Low Effort Prompt x Day", "High Effort Prompt vs Low Effort Prompt x Day Squared")
+row.names(dat_contrast) <- c("High Effort Prompt vs Low Effort Prompt", "High Effort Prompt vs Low Effort Prompt x Day", "High Effort Prompt vs Low Effort Prompt x Day Squared",
+                             "High Effort Prompt vs. Low Effort Prompt: Day 1",
+                             "High Effort Prompt vs. Low Effort Prompt: Day 2",
+                             "High Effort Prompt vs. Low Effort Prompt: Day 3",
+                             "High Effort Prompt vs. Low Effort Prompt: Day 4",
+                             "High Effort Prompt vs. Low Effort Prompt: Day 5",
+                             "High Effort Prompt vs. Low Effort Prompt: Day 6",
+                             "High Effort Prompt vs. Low Effort Prompt: Day 7",
+                             "High Effort Prompt vs. Low Effort Prompt: Day 8",
+                             "Low Effort Prompt vs. No Prompt: Day 1",
+                             "Low Effort Prompt vs. No Prompt: Day 2",
+                             "Low Effort Prompt vs. No Prompt: Day 3",
+                             "Low Effort Prompt vs. No Prompt: Day 4",
+                             "Low Effort Prompt vs. No Prompt: Day 5",
+                             "Low Effort Prompt vs. No Prompt: Day 6",
+                             "Low Effort Prompt vs. No Prompt: Day 7",
+                             "Low Effort Prompt vs. No Prompt: Day 8",
+                             "High Effort Prompt vs. No Prompt: Day 1",
+                             "High Effort Prompt vs. No Prompt: Day 2",
+                             "High Effort Prompt vs. No Prompt: Day 3",
+                             "High Effort Prompt vs. No Prompt: Day 4",
+                             "High Effort Prompt vs. No Prompt: Day 5",
+                             "High Effort Prompt vs. No Prompt: Day 6",
+                             "High Effort Prompt vs. No Prompt: Day 7",
+                             "High Effort Prompt vs. No Prompt: Day 8")
 
 results_obj <- rbind(dat_results, dat_contrast)
 
@@ -98,9 +149,36 @@ for(idx_replicate in 1:max_replicate_id){
                  id = participant_id, 
                  waves = decision_point)
   
-  Lmat <- matrix(c(0, 0, 0, 0, 1,-1, 0, 0, 0, 0,
+  Lmat <- matrix(c(0, 0, 0, 0, 1,-1, 0, 0, 0,  0,
                    0, 0, 0, 0, 0, 0, 1, -1, 0, 0,
-                   0, 0, 0, 0, 0, 0, 0, 0, 1, -1), 
+                   0, 0, 0, 0, 0, 0, 0,  0, 1, -1,
+                   # High vs. Low on Day t
+                   0, 0, 0, 0, 1,-1, 1, -1, 1, -1,
+                   0, 0, 0, 0, 1,-1, 2, -2, 4, -4,
+                   0, 0, 0, 0, 1,-1, 3, -3, 9, -9,
+                   0, 0, 0, 0, 1,-1, 4, -4, 16, -16,
+                   0, 0, 0, 0, 1,-1, 5, -5, 25, -25,
+                   0, 0, 0, 0, 1,-1, 6, -6, 36, -36,
+                   0, 0, 0, 0, 1,-1, 7, -7, 49, -49,
+                   0, 0, 0, 0, 1,-1, 8, -8, 64, -64,
+                   # Low vs None on Day t
+                   0, 0, 0, 0, 0, 1, 0, 1, 0,   1,
+                   0, 0, 0, 0, 0, 1, 0, 2, 0, 2*2,
+                   0, 0, 0, 0, 0, 1, 0, 3, 0, 3*3,
+                   0, 0, 0, 0, 0, 1, 0, 4, 0, 4*4,
+                   0, 0, 0, 0, 0, 1, 0, 5, 0, 5*5,
+                   0, 0, 0, 0, 0, 1, 0, 6, 0, 6*6,
+                   0, 0, 0, 0, 0, 1, 0, 7, 0, 7*7,
+                   0, 0, 0, 0, 0, 1, 0, 8, 0, 8*8,
+                   # High vs None on Day t
+                   0, 0, 0, 0, 1, 0, 1, 0, 1,   0,
+                   0, 0, 0, 0, 1, 0, 2, 0, 2*2, 0,
+                   0, 0, 0, 0, 1, 0, 3, 0, 3*3, 0,
+                   0, 0, 0, 0, 1, 0, 4, 0, 4*4, 0,
+                   0, 0, 0, 0, 1, 0, 5, 0, 5*5, 0,
+                   0, 0, 0, 0, 1, 0, 6, 0, 6*6, 0,
+                   0, 0, 0, 0, 1, 0, 7, 0, 7*7, 0,
+                   0, 0, 0, 0, 1, 0, 8, 0, 8*8, 0), 
                  ncol = 10, byrow = TRUE)
   est_contrast <- Lmat %*% fit1$coefficients
   est_std_err_contrast <- sqrt(diag(Lmat %*% vcov(fit1) %*% t(Lmat)))
@@ -115,7 +193,31 @@ for(idx_replicate in 1:max_replicate_id){
                              p_value = NA)
   dat_contrast[["Z_statistic"]] <- dat_contrast[["est"]]/dat_contrast[["std_err"]]
   dat_contrast[["p_value"]] <- 2*pnorm(abs(dat_contrast[["Z_statistic"]]), lower.tail = FALSE)
-  row.names(dat_contrast) <- c("High Effort Prompt vs Low Effort Prompt", "High Effort Prompt vs Low Effort Prompt x Day", "High Effort Prompt vs Low Effort Prompt x Day Squared")
+  row.names(dat_contrast) <- c("High Effort Prompt vs Low Effort Prompt", "High Effort Prompt vs Low Effort Prompt x Day", "High Effort Prompt vs Low Effort Prompt x Day Squared",
+                               "High Effort Prompt vs. Low Effort Prompt: Day 1",
+                               "High Effort Prompt vs. Low Effort Prompt: Day 2",
+                               "High Effort Prompt vs. Low Effort Prompt: Day 3",
+                               "High Effort Prompt vs. Low Effort Prompt: Day 4",
+                               "High Effort Prompt vs. Low Effort Prompt: Day 5",
+                               "High Effort Prompt vs. Low Effort Prompt: Day 6",
+                               "High Effort Prompt vs. Low Effort Prompt: Day 7",
+                               "High Effort Prompt vs. Low Effort Prompt: Day 8",
+                               "Low Effort Prompt vs. No Prompt: Day 1",
+                               "Low Effort Prompt vs. No Prompt: Day 2",
+                               "Low Effort Prompt vs. No Prompt: Day 3",
+                               "Low Effort Prompt vs. No Prompt: Day 4",
+                               "Low Effort Prompt vs. No Prompt: Day 5",
+                               "Low Effort Prompt vs. No Prompt: Day 6",
+                               "Low Effort Prompt vs. No Prompt: Day 7",
+                               "Low Effort Prompt vs. No Prompt: Day 8",
+                               "High Effort Prompt vs. No Prompt: Day 1",
+                               "High Effort Prompt vs. No Prompt: Day 2",
+                               "High Effort Prompt vs. No Prompt: Day 3",
+                               "High Effort Prompt vs. No Prompt: Day 4",
+                               "High Effort Prompt vs. No Prompt: Day 5",
+                               "High Effort Prompt vs. No Prompt: Day 6",
+                               "High Effort Prompt vs. No Prompt: Day 7",
+                               "High Effort Prompt vs. No Prompt: Day 8")
   
   results_obj <- rbind(dat_results, dat_contrast)
   

@@ -38,9 +38,7 @@ dat_primary_aim <- readRDS(file = file.path(path_multiple_imputation_pipeline_da
 dat_primary_aim <- dat_primary_aim %>%
   group_by(participant_id) %>%
   mutate(eligibility_lag1 = lag(eligibility),
-         Y_lag1 = lag(Y),
-         motivation_cig_lag1 = lag(motivation_cig),
-         cigarette_counts_lag1 = lag(cigarette_counts)) %>%
+         self_efficacy_cig_lag1 = lag(self_efficacy_cig)) %>%
   ungroup(.)
 
 dat_primary_aim <- dat_primary_aim %>%
@@ -51,29 +49,25 @@ dat_primary_aim <- dat_primary_aim %>%
 dat_for_analysis <- dat_primary_aim %>%
   select(participant_id,
          decision_point,
-         motivation_cig,
+         self_efficacy_cig,
          coinflip,
          is_high_effort,
          is_low_effort,
          eligibility,
          eligibility_lag1,
-         Y_lag1,
-         motivation_cig_lag1,
-         cigarette_counts_lag1,
+         self_efficacy_cig_lag1,
          days_between_v1_and_coinflip_local) %>%
   mutate(overall_elig = if_else((eligibility == 1) & (eligibility_lag1 == 1), 1, 0))
 ```
 
 ```{r}
-my_list <- list(motivation_cig = -1,
+my_list <- list(self_efficacy_cig = -1,
                 coinflip = -1,
                 is_high_effort = -1,
                 is_low_effort = -1,
                 eligibility = -1,
                 eligibility_lag1 = -1,
-                Y_lag1 = -1,
-                motivation_cig_lag1 = -1,
-                cigarette_counts_lag1 = -1,
+                self_efficacy_cig_lag1 = -1,
                 days_between_v1_and_coinflip_local = -1)
 ```
 
@@ -84,13 +78,10 @@ dat_for_analysis_not_elig <- dat_for_analysis %>% filter(overall_elig == 0)
 
 ```{r}
 logical_vec_cc <- dat_for_analysis_elig %>% 
-  select(motivation_cig,
-         Y_lag1,
-         motivation_cig_lag1,
-         cigarette_counts_lag1) %>%
+  select(self_efficacy_cig,
+         self_efficacy_cig_lag1) %>%
   complete.cases(.)
 ```
-
 
 ```{r}
 # Note that this line is needed because we are doing a complete case analysis
@@ -117,16 +108,15 @@ if(length(participants_fully_dropped) > 0){
 }
 ```
 
-
 ```{r}
 fit1 <- wcls(
   data = dat_for_analysis,
   id = "participant_id",  
-  outcome = "motivation_cig",
+  outcome = "self_efficacy_cig",
   treatment = "coinflip",
   rand_prob = 0.5,
   moderator_formula = ~ 1,  
-  control_formula = ~ days_between_v1_and_coinflip_local + motivation_cig_lag1 + Y_lag1 + cigarette_counts_lag1, 
+  control_formula = ~ days_between_v1_and_coinflip_local + self_efficacy_cig_lag1, 
   availability = "overall_elig"
 )
 
@@ -164,11 +154,11 @@ dat_out %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("an
 fit1 <- wcls(
   data = dat_for_analysis,
   id = "participant_id",  
-  outcome = "motivation_cig",
+  outcome = "self_efficacy_cig",
   treatment = "coinflip",
   rand_prob = 0.5,
   moderator_formula = ~ days_between_v1_and_coinflip_local,  
-  control_formula = ~ days_between_v1_and_coinflip_local + motivation_cig_lag1 + Y_lag1 + cigarette_counts_lag1, 
+  control_formula = ~ days_between_v1_and_coinflip_local + self_efficacy_cig_lag1, 
   availability = "overall_elig"
 )
 
@@ -205,34 +195,19 @@ dat_out %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("an
 ```
 
 ```{r}
-dat_causal <- dat_out[1:nrow(dat_result_causal),]
-
-png(file = file.path("analysis-complete-case", "formatted-output", "primary_study_day_linear.png"), width = 6, height = 6, units = "in", res = 600)
-
-plot(1:8, dat_causal[-c(1:2),]$Estimate, type = "o", lwd = 1, ylim = c(-1,1), xlab = "Day", ylab = "Treatment Effect")
-lines(1:8, dat_causal[-c(1:2),]$LCL90, type = "o", lty = 2, lwd = 1)
-lines(1:8, dat_causal[-c(1:2),]$UCL90, type = "o", lty = 2, lwd = 1)
-abline(h = 0, lty = 2, lwd = 1, col = "red")
-
-dev.off()
-```
-
-```{r}
 fit1 <- wcls(
   data = dat_for_analysis,
   id = "participant_id",  
-  outcome = "motivation_cig",
+  outcome = "self_efficacy_cig",
   treatment = "coinflip",
   rand_prob = 0.5,
   moderator_formula = ~ days_between_v1_and_coinflip_local + I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local),  
-  control_formula = ~ days_between_v1_and_coinflip_local + I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local) + motivation_cig_lag1 + Y_lag1 + cigarette_counts_lag1, 
+  control_formula = ~ days_between_v1_and_coinflip_local + I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local) + self_efficacy_cig_lag1, 
   availability = "overall_elig"
 )
 
 summary(fit1, show_control_fit = TRUE)
 ```
-
-
 ```{r}
 Lmat <- matrix(c(rep(1,8), 1:8, (1:8)^2), ncol = 3, byrow = FALSE)
 
@@ -261,87 +236,15 @@ row.names(dat_out) <- c("Treatment (Prompt = 1, No Prompt = 0)", "Treatment x Da
 # Format output to 5 decimal places
 dat_out %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("analysis-complete-case", "formatted-output", "primary_study_day_quadratic.csv"), row.names = TRUE)
 ```
-
-```{r}
-dat_causal <- dat_out[1:nrow(dat_result_causal),]
-
-png(file = file.path("analysis-complete-case", "formatted-output", "primary_study_day_quadratic.png"), width = 6, height = 6, units = "in", res = 600)
-
-plot(1:8, dat_causal[-c(1:3),]$Estimate, type = "o", lwd = 1, ylim = c(-1,1), xlab = "Day", ylab = "Treatment Effect")
-lines(1:8, dat_causal[-c(1:3),]$LCL90, type = "o", lty = 2, lwd = 1)
-lines(1:8, dat_causal[-c(1:3),]$UCL90, type = "o", lty = 2, lwd = 1)
-abline(h = 0, lty = 2, lwd = 1, col = "red")
-
-dev.off()
-```
-
-```{r}
-fit1 <- wcls(
-    data = dat_for_analysis,
-    id = "participant_id",  
-    outcome = "motivation_cig",
-    treatment = "coinflip",
-    rand_prob = 0.5,
-    moderator_formula = ~ days_between_v1_and_coinflip_local + I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local) + I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local  * days_between_v1_and_coinflip_local),  
-    control_formula = ~ days_between_v1_and_coinflip_local + I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local)  + I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local  * days_between_v1_and_coinflip_local)+ motivation_cig_lag1 + Y_lag1 + cigarette_counts_lag1, 
-    availability = "overall_elig"
-)
-
-summary(fit1, show_control_fit = TRUE)
-```
-
-
-```{r}
-Lmat <- matrix(c(rep(1,8), 1:8, (1:8)^2, (1:8)^3), ncol = 4, byrow = FALSE)
-
-dat_result_causal <- summary(fit1, show_control_fit = TRUE, lincomb = Lmat)[["causal_excursion_effect"]]
-dat_result_control <- summary(fit1, show_control_fit = TRUE, lincomb = Lmat)[["control_variables"]]
-
-dat_result <- rbind(dat_result_causal, dat_result_control)
-dat_result <- as.data.frame(dat_result)
-
-dat_result[["LCL"]] <- dat_result[["Estimate"]] - dat_result[["StdErr"]] * qnorm(0.975)
-dat_result[["UCL"]] <- dat_result[["Estimate"]] + dat_result[["StdErr"]] * qnorm(0.975)
-dat_result[["LCL90"]] <- dat_result[["Estimate"]] - dat_result[["StdErr"]] * qnorm(0.95)
-dat_result[["UCL90"]] <- dat_result[["Estimate"]] + dat_result[["StdErr"]] * qnorm(0.95)
-dat_result[["p_value"]] <- 2*pnorm(abs(dat_result[["Estimate"]]/dat_result[["StdErr"]]), lower.tail = FALSE)
-
-dat_out <- data.frame(Estimate = dat_result$Estimate,
-                      StdErr = dat_result$StdErr,
-                      LCL = dat_result$LCL,
-                      UCL = dat_result$UCL,
-                      LCL90 = dat_result$LCL90,
-                      UCL90 = dat_result$UCL90,
-                      p_value = dat_result$p_value)
-
-row.names(dat_out) <- c("Treatment (Prompt = 1, No Prompt = 0)", "Treatment x Day", "Treatment x Day Squared", "Treatment x Day Cubed", paste("Treatment Effect on Day ", 1:8, sep = ""), row.names(dat_result_control))
-
-# Format output to 5 decimal places
-dat_out %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("analysis-complete-case", "formatted-output", "primary_study_day_cubic.csv"), row.names = TRUE)
-```
-
-```{r}
-dat_causal <- dat_out[1:nrow(dat_result_causal),]
-
-png(file = file.path("analysis-complete-case", "formatted-output", "primary_study_day_cubic.png"), width = 6, height = 6, units = "in", res = 600)
-
-plot(1:8, dat_causal[-c(1:4),]$Estimate, type = "o", lwd = 1, ylim = c(-1,1), xlab = "Day", ylab = "Treatment Effect")
-lines(1:8, dat_causal[-c(1:4),]$LCL90, type = "o", lty = 2, lwd = 1)
-lines(1:8, dat_causal[-c(1:4),]$UCL90, type = "o", lty = 2, lwd = 1)
-abline(h = 0, lty = 2, lwd = 1, col = "red")
-
-dev.off()
-```
-
 ```{r}
 fit1 <- wcls(
   data = dat_for_analysis,
   id = "participant_id",  
-  outcome = "motivation_cig",
+  outcome = "self_efficacy_cig",
   treatment = "coinflip",
   rand_prob = 0.5,
-  moderator_formula = ~ cigarette_counts_lag1,  
-  control_formula = ~ days_between_v1_and_coinflip_local + motivation_cig_lag1 + Y_lag1 + cigarette_counts_lag1, 
+  moderator_formula = ~ self_efficacy_cig_lag1,  
+  control_formula = ~ days_between_v1_and_coinflip_local + self_efficacy_cig_lag1, 
   availability = "overall_elig"
 )
 
@@ -350,7 +253,7 @@ summary(fit1, show_control_fit = TRUE)
 
 
 ```{r}
-Lmat <- matrix(c(rep(1,12), 0:11), ncol = 2, byrow = FALSE)
+Lmat <- matrix(c(rep(1,5), 0:4), ncol = 2, byrow = FALSE)
 
 dat_result_causal <- summary(fit1, show_control_fit = TRUE, lincomb = Lmat)[["causal_excursion_effect"]]
 dat_result_control <- summary(fit1, show_control_fit = TRUE, lincomb = Lmat)[["control_variables"]]
@@ -372,27 +275,8 @@ dat_out <- data.frame(Estimate = dat_result$Estimate,
                       UCL90 = dat_result$UCL90,
                       p_value = dat_result$p_value)
 
-row.names(dat_out) <- c("Treatment (Prompt = 1, No Prompt = 0)", "Treatment x Prior Cigs Smoked", paste("Treatment Effect when Prior Cigs Smoked was ", 0:11, sep = ""), row.names(dat_result_control))
+row.names(dat_out) <- c("Treatment (Prompt = 1, No Prompt = 0)", "Treatment x Prior Self Efficacy", paste("Treatment Effect when Prior Self Efficacy was ", 0:4, sep = ""), row.names(dat_result_control))
 
 # Format output to 5 decimal places
 dat_out %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("analysis-complete-case", "formatted-output", "primary_moderator.csv"), row.names = TRUE)
-```
-
-```{r}
-dat_causal <- dat_out[1:nrow(dat_result_causal),]
-
-png(file = file.path("analysis-complete-case", "formatted-output", "primary_moderator.png"), width = 6, height = 6, units = "in", res = 600)
-
-plot(0:11, dat_causal[-c(1:2),]$Estimate, type = "o", lwd = 1, ylim = c(-1,1), xlab = "Prior cigs smoked", ylab = "Treatment Effect")
-lines(0:11, dat_causal[-c(1:2),]$LCL90, type = "o", lty = 2, lwd = 1)
-lines(0:11, dat_causal[-c(1:2),]$UCL90, type = "o", lty = 2, lwd = 1)
-abline(h = 0, lty = 2, lwd = 1, col = "red")
-
-dev.off()
-```
-
-```{r}
-if(file.exists("analysis-complete-case/formatted-output/Thumbs.db")){
-  file.remove("analysis-complete-case/formatted-output/Thumbs.db")
-}
 ```

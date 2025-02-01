@@ -120,16 +120,6 @@
       ],
       "Hash": "cad6cf7f1d5f6e906700b9d3e718c796"
     },
-    "assertthat": {
-      "Package": "assertthat",
-      "Version": "0.2.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "tools"
-      ],
-      "Hash": "50c838a310445e954bc13f26f26a6ecf"
-    },
     "backports": {
       "Package": "backports",
       "Version": "1.4.1",
@@ -1206,19 +1196,6 @@
       ],
       "Hash": "47be9c32eb004c1945307eb318a6ef98"
     },
-    "pROC": {
-      "Package": "pROC",
-      "Version": "1.18.5",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "Rcpp",
-        "methods",
-        "plyr"
-      ],
-      "Hash": "82d32ebd548c6a4e7de73bab96411b3b"
-    },
     "pan": {
       "Package": "pan",
       "Version": "1.9",
@@ -1291,17 +1268,6 @@
         "withr"
       ],
       "Hash": "903d68319ae9923fb2e2ee7fa8230b91"
-    },
-    "plyr": {
-      "Package": "plyr",
-      "Version": "1.8.9",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "Rcpp"
-      ],
-      "Hash": "6b8177fd19982f0020743fadbfdbd933"
     },
     "praise": {
       "Package": "praise",
@@ -1771,24 +1737,6 @@
       ],
       "Hash": "a84e2cc86d07289b3b6f5069df7a004c"
     },
-    "tidyjson": {
-      "Package": "tidyjson",
-      "Version": "0.3.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "assertthat",
-        "dplyr",
-        "jsonlite",
-        "magrittr",
-        "purrr",
-        "rlang",
-        "tibble",
-        "tidyr"
-      ],
-      "Hash": "96d26a49276e30e09b6288d8ae406083"
-    },
     "tidyr": {
       "Package": "tidyr",
       "Version": "1.3.0",
@@ -1888,16 +1836,6 @@
         "xfun"
       ],
       "Hash": "0c41a73214d982f539c56a7773c7afa5"
-    },
-    "tvem": {
-      "Package": "tvem",
-      "Version": "1.4.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "mgcv"
-      ],
-      "Hash": "e68b5733966993627c232d99847667ab"
     },
     "tzdb": {
       "Package": "tzdb",

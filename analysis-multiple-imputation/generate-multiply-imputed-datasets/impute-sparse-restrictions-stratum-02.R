@@ -98,27 +98,26 @@ my_list <- list("cigarette_counts" = NULL,
 
 this_outcome <- "cigarette_counts"
 my_list[[this_outcome]] <- c(this_outcome,
+                             "is_high_effort", "is_low_effort",
                              "baseline_tobacco_history", "Nicotine_dep",
-                             "hour_coinflip_local",
-                             "days_between_v1_and_coinflip_local",
+                             "any_response_2qs",
                              "hours_elapsed_since_most_recent_eligible")
 
 this_outcome <- "motivation_cig"
 my_list[[this_outcome]] <- c(this_outcome,
+                             "is_high_effort", "is_low_effort",
                              "TSAM_Total",
-                             "hour_coinflip_local",
+                             "any_response_2qs",
                              "cigarette_counts",
-                             "days_between_v1_and_coinflip_local",
                              "hours_elapsed_since_most_recent_eligible")
 
 this_outcome <- "self_efficacy_cig"
 my_list[[this_outcome]] <- c(this_outcome,
                              "is_high_effort", "is_low_effort",
                              "SE_total",
-                             "hour_coinflip_local",
+                             "any_response_2qs",
                              "cigarette_counts",
                              "motivation_cig",
-                             "days_between_v1_and_coinflip_local",
                              "hours_elapsed_since_most_recent_eligible")
 
 ###############################################################################

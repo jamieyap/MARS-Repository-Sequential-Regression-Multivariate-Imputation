@@ -52,9 +52,11 @@ for(j in 1:num_terms){
   list_pooled_std_err <- append(list_pooled_std_err, sqrt(pool_manual$t))
 }
 
-fit_pooled <- data.frame(Estimate = unlist(list_pooled_est), StdErr = unlist(list_pooled_std_err), LCL = NA_real_, UCL = NA_real_, p_value = NA_real_)
+fit_pooled <- data.frame(Estimate = unlist(list_pooled_est), StdErr = unlist(list_pooled_std_err), LCL = NA_real_, UCL = NA_real_, LCL90 = NA_real_, UCL90 = NA_real_, p_value = NA_real_)
 fit_pooled[["LCL"]] <- fit_pooled[["Estimate"]] - fit_pooled[["StdErr"]] * qnorm(0.975)
 fit_pooled[["UCL"]] <- fit_pooled[["Estimate"]] + fit_pooled[["StdErr"]] * qnorm(0.975)
+fit_pooled[["LCL90"]] <- fit_pooled[["Estimate"]] - fit_pooled[["StdErr"]] * qnorm(0.95)
+fit_pooled[["UCL90"]] <- fit_pooled[["Estimate"]] + fit_pooled[["StdErr"]] * qnorm(0.95)
 fit_pooled[["p_value"]] <- 2*pnorm(abs(fit_pooled[["Estimate"]]/fit_pooled[["StdErr"]]), lower.tail = FALSE)
 row.names(fit_pooled) <- row.names(results_obj)
 
@@ -98,6 +100,8 @@ row.names(dat_pbcom) <- row.names(results_obj_rep)
 ###############################################################################
 # Save output
 ###############################################################################
+dat_pbcom <- dat_pbcom[5:nrow(fit_pooled),]
+
 fit_pooled_control <- fit_pooled[1:4,]
 fit_pooled_causal <- fit_pooled[5:nrow(fit_pooled),]
 
