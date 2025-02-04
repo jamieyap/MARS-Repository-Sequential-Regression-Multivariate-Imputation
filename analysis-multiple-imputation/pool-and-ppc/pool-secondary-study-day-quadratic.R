@@ -105,8 +105,8 @@ dat_pbcom <- dat_pbcom[5:nrow(fit_pooled),]
 fit_pooled_control <- fit_pooled[1:4,]
 fit_pooled_causal <- fit_pooled[5:nrow(fit_pooled),]
 
-fit_pooled_causal_formatted <- format(round(fit_pooled_causal, 3), nsmall = 3)
-fit_pooled_control_formatted <- format(round(fit_pooled_control, 3), nsmall = 3)
+fit_pooled_causal_formatted <- format(round(fit_pooled_causal, 10), nsmall = 10)
+fit_pooled_control_formatted <- format(round(fit_pooled_control, 10), nsmall = 10)
 dat_pbcom_formatted <- format(round(dat_pbcom, 3), nsmall = 3)
 dat_pool_stats_formatted <- format(round(dat_pool_stats, 5), nsmall = 5)
 
