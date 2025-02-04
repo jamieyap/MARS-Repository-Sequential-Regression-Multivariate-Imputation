@@ -30,13 +30,13 @@ use_alpha <- 0.10/2
 ###############################################################################
 # Mean among eligible decision points micro-randomized to no prompt
 ###############################################################################
-dat <- dat_primary_aim %>% filter((eligibility_lag1 == 1) & (eligibility == 1)) %>% filter(coinflip == 0)
+dat <- dat_primary_aim %>% filter((eligibility == 1 & eligibility_lag1 == 1)) %>% filter(!is.na(self_efficacy_cig_lag1)) %>% filter(coinflip == 0)
 dat_count_total <- dat %>% 
-  group_by(decision_point) %>% 
+  group_by(self_efficacy_cig_lag1) %>% 
   summarise(n_total = n(),
             n_observed_among_total = sum((!is.na(status_survey_ema_collapsed)) & (status_survey_ema_collapsed == "fully_completed")))
 
-list_fit_by_dp <- dat %>% group_by(decision_point) %>% group_map(~ geeglm(self_efficacy_cig ~ 1, data = .x, id = participant_id, family = gaussian))
+list_fit_by_dp <- dat %>% group_by(self_efficacy_cig_lag1) %>% group_map(~ geeglm(self_efficacy_cig ~ 1, data = .x, id = participant_id, family = gaussian))
 list_estimates_by_dp_mu_scale <- lapply(list_fit_by_dp, 
                                         function(current_fit, a = use_alpha){
                                           results <- current_fit %>% summary(.) %>% .[["coefficients"]] %>% as_tibble(.)
@@ -49,22 +49,22 @@ list_estimates_by_dp_mu_scale <- lapply(list_fit_by_dp,
                                           return(results_mu_scale)
                                         })
 dat_estimates_by_dp_mu_scale <- bind_rows(list_estimates_by_dp_mu_scale)
-dat_estimates_by_dp_mu_scale$decision_point <- 7:54
-dat_estimates_by_dp_mu_scale <- left_join(x = dat_count_total, y = dat_estimates_by_dp_mu_scale, by = join_by(decision_point == decision_point))
+dat_estimates_by_dp_mu_scale$self_efficacy_cig_lag1 <- 0:4
+dat_estimates_by_dp_mu_scale <- left_join(x = dat_count_total, y = dat_estimates_by_dp_mu_scale, by = join_by(self_efficacy_cig_lag1 == self_efficacy_cig_lag1))
 dat_estimates_by_dp_mu_scale <- dat_estimates_by_dp_mu_scale %>% round(., digits = 3)
 
-write.csv(dat_estimates_by_dp_mu_scale, file = file.path("analysis-complete-case", "formatted-output", "cc_est_no_prompt_by_dp.csv"), row.names = FALSE)
+write.csv(dat_estimates_by_dp_mu_scale, file = file.path("analysis-complete-case", "formatted-output", "cc_est_no_prompt_by_prior_self_efficacy.csv"), row.names = FALSE)
 
 ###############################################################################
 # Mean among eligible decision points micro-randomized to high effort prompt
 ###############################################################################
-dat <- dat_primary_aim %>% filter((eligibility_lag1 == 1) & (eligibility == 1)) %>% filter(is_high_effort == 1)
+dat <- dat_primary_aim %>% filter((eligibility == 1 & eligibility_lag1 == 1)) %>% filter(!is.na(self_efficacy_cig_lag1)) %>% filter(is_high_effort == 1)
 dat_count_total <- dat %>% 
-  group_by(decision_point) %>% 
+  group_by(self_efficacy_cig_lag1) %>% 
   summarise(n_total = n(),
             n_observed_among_total = sum((!is.na(status_survey_ema_collapsed)) & (status_survey_ema_collapsed == "fully_completed")))
 
-list_fit_by_dp <- dat %>% group_by(decision_point) %>% group_map(~ geeglm(self_efficacy_cig ~ 1, data = .x, id = participant_id, family = gaussian))
+list_fit_by_dp <- dat %>% group_by(self_efficacy_cig_lag1) %>% group_map(~ geeglm(self_efficacy_cig ~ 1, data = .x, id = participant_id, family = gaussian))
 list_estimates_by_dp_mu_scale <- lapply(list_fit_by_dp, 
                                         function(current_fit, a = use_alpha){
                                           results <- current_fit %>% summary(.) %>% .[["coefficients"]] %>% as_tibble(.)
@@ -77,22 +77,22 @@ list_estimates_by_dp_mu_scale <- lapply(list_fit_by_dp,
                                           return(results_mu_scale)
                                         })
 dat_estimates_by_dp_mu_scale <- bind_rows(list_estimates_by_dp_mu_scale)
-dat_estimates_by_dp_mu_scale$decision_point <- 7:54
-dat_estimates_by_dp_mu_scale <- left_join(x = dat_count_total, y = dat_estimates_by_dp_mu_scale, by = join_by(decision_point == decision_point))
+dat_estimates_by_dp_mu_scale$self_efficacy_cig_lag1 <- 0:4
+dat_estimates_by_dp_mu_scale <- left_join(x = dat_count_total, y = dat_estimates_by_dp_mu_scale, by = join_by(self_efficacy_cig_lag1 == self_efficacy_cig_lag1))
 dat_estimates_by_dp_mu_scale <- dat_estimates_by_dp_mu_scale %>% round(., digits = 3)
 
-write.csv(dat_estimates_by_dp_mu_scale, file = file.path("analysis-complete-case", "formatted-output", "cc_est_high_effort_prompt_by_dp.csv"), row.names = FALSE)
+write.csv(dat_estimates_by_dp_mu_scale, file = file.path("analysis-complete-case", "formatted-output", "cc_est_high_effort_prompt_by_prior_self_efficacy.csv"), row.names = FALSE)
 
 ###############################################################################
 # Mean among eligible decision points micro-randomized to low effort prompt
 ###############################################################################
-dat <- dat_primary_aim %>% filter((eligibility_lag1 == 1) & (eligibility == 1)) %>% filter(is_low_effort == 1)
+dat <- dat_primary_aim %>% filter((eligibility == 1 & eligibility_lag1 == 1)) %>% filter(!is.na(self_efficacy_cig_lag1)) %>% filter(is_low_effort == 1)
 dat_count_total <- dat %>% 
-  group_by(decision_point) %>% 
+  group_by(self_efficacy_cig_lag1) %>% 
   summarise(n_total = n(),
             n_observed_among_total = sum((!is.na(status_survey_ema_collapsed)) & (status_survey_ema_collapsed == "fully_completed")))
 
-list_fit_by_dp <- dat %>% group_by(decision_point) %>% group_map(~ geeglm(self_efficacy_cig ~ 1, data = .x, id = participant_id, family = gaussian))
+list_fit_by_dp <- dat %>% group_by(self_efficacy_cig_lag1) %>% group_map(~ geeglm(self_efficacy_cig ~ 1, data = .x, id = participant_id, family = gaussian))
 list_estimates_by_dp_mu_scale <- lapply(list_fit_by_dp, 
                                         function(current_fit, a = use_alpha){
                                           results <- current_fit %>% summary(.) %>% .[["coefficients"]] %>% as_tibble(.)
@@ -105,9 +105,9 @@ list_estimates_by_dp_mu_scale <- lapply(list_fit_by_dp,
                                           return(results_mu_scale)
                                         })
 dat_estimates_by_dp_mu_scale <- bind_rows(list_estimates_by_dp_mu_scale)
-dat_estimates_by_dp_mu_scale$decision_point <- 7:54
-dat_estimates_by_dp_mu_scale <- left_join(x = dat_count_total, y = dat_estimates_by_dp_mu_scale, by = join_by(decision_point == decision_point))
+dat_estimates_by_dp_mu_scale$self_efficacy_cig_lag1 <- 0:4
+dat_estimates_by_dp_mu_scale <- left_join(x = dat_count_total, y = dat_estimates_by_dp_mu_scale, by = join_by(self_efficacy_cig_lag1 == self_efficacy_cig_lag1))
 dat_estimates_by_dp_mu_scale <- dat_estimates_by_dp_mu_scale %>% round(., digits = 3)
 
-write.csv(dat_estimates_by_dp_mu_scale, file = file.path("analysis-complete-case", "formatted-output", "cc_est_low_effort_prompt_by_dp.csv"), row.names = FALSE)
+write.csv(dat_estimates_by_dp_mu_scale, file = file.path("analysis-complete-case", "formatted-output", "cc_est_low_effort_prompt_by_prior_self_efficacy.csv"), row.names = FALSE)
 

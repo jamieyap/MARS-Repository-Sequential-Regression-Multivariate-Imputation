@@ -25,7 +25,7 @@ for(mi_dataset_num in 1:.__total_imputed_datasets){
   dat_long_completed <- readRDS(file = file.path(path_multiple_imputation_pipeline_data, "sequentially-completed-datasets", mi_dataset_num, paste("dat_long_completed", ".rds", sep = "")))
   dat_long_completed <- dat_long_completed %>% filter((decision_point >= 7) & (decision_point <= 54))
   
-  dat_long_completed <- dat_long_completed %>% filter(replicate_id == 0) %>% filter(eligibility == 1) %>% filter(coinflip == 0)
+  dat_long_completed <- dat_long_completed %>% filter(replicate_id == 0) %>% filter((eligibility == 1) & (eligibility_lag1 == 1)) %>% filter(coinflip == 0)
   list_current_fit_by_dp <- dat_long_completed %>% group_by(decision_point) %>% group_map(~ geeglm(self_efficacy_cig ~ 1, data = .x, id = participant_id, family = gaussian))
   list_current_estimates_by_dp <- lapply(list_current_fit_by_dp,
                                          function(current_fit){
@@ -61,7 +61,7 @@ for(mi_dataset_num in 1:.__total_imputed_datasets){
   dat_long_completed <- readRDS(file = file.path(path_multiple_imputation_pipeline_data, "sequentially-completed-datasets", mi_dataset_num, paste("dat_long_completed", ".rds", sep = "")))
   dat_long_completed <- dat_long_completed %>% filter((decision_point >= 7) & (decision_point <= 54))
   
-  dat_long_completed <- dat_long_completed %>% filter(replicate_id == 0) %>% filter(eligibility == 1) %>% filter(is_high_effort == 1)
+  dat_long_completed <- dat_long_completed %>% filter(replicate_id == 0) %>% filter((eligibility == 1) & (eligibility_lag1 == 1)) %>% filter(is_high_effort == 1)
   list_current_fit_by_dp <- dat_long_completed %>% group_by(decision_point) %>% group_map(~ geeglm(self_efficacy_cig ~ 1, data = .x, id = participant_id, family = gaussian))
   list_current_estimates_by_dp <- lapply(list_current_fit_by_dp,
                                          function(current_fit){
@@ -97,7 +97,7 @@ for(mi_dataset_num in 1:.__total_imputed_datasets){
   dat_long_completed <- readRDS(file = file.path(path_multiple_imputation_pipeline_data, "sequentially-completed-datasets", mi_dataset_num, paste("dat_long_completed", ".rds", sep = "")))
   dat_long_completed <- dat_long_completed %>% filter((decision_point >= 7) & (decision_point <= 54))
   
-  dat_long_completed <- dat_long_completed %>% filter(replicate_id == 0) %>% filter(eligibility == 1) %>% filter(is_low_effort == 1)
+  dat_long_completed <- dat_long_completed %>% filter(replicate_id == 0) %>% filter((eligibility == 1) & (eligibility_lag1 == 1)) %>% filter(is_low_effort == 1)
   list_current_fit_by_dp <- dat_long_completed %>% group_by(decision_point) %>% group_map(~ geeglm(self_efficacy_cig ~ 1, data = .x, id = participant_id, family = gaussian))
   list_current_estimates_by_dp <- lapply(list_current_fit_by_dp,
                                          function(current_fit){

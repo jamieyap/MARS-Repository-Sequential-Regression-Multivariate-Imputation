@@ -84,7 +84,7 @@ all_results <- rbind(cc_results, mi_results)
 
 ggplot(all_results, aes(x = response, y = est, ymin = lb, ymax = ub, color = where_from, fill = where_from)) +
   scale_y_continuous(name = "Estimated Difference in Means", limits = c(-0.75,0.75), breaks = seq(-0.75,0.75,0.25)) +
-  scale_x_continuous(name = "", limits = c(0,4), breaks = c(0,1,2,3,4)) + 
+  scale_x_continuous(name = "Prior Self-Efficacy", limits = c(0,4), breaks = c(0,1,2,3,4)) + 
   theme(axis.text = element_text(size = 18), title = element_text(size = 20), legend.position = "none") +
   scale_fill_manual(values=group_colors_fill) +
   geom_ribbon(alpha = 0.5, color = NA) +
@@ -140,7 +140,7 @@ all_results <- rbind(cc_results, mi_results)
 
 ggplot(all_results, aes(x = response, y = est, ymin = lb, ymax = ub, color = where_from, fill = where_from)) +
   scale_y_continuous(name = "Estimated Difference in Means", limits = c(-0.75,0.75), breaks = seq(-0.75,0.75,0.25)) +
-  scale_x_continuous(name = "", limits = c(1,8), breaks = seq(1,8,1)) + 
+  scale_x_continuous(name = "Day since start of MRT", limits = c(1,8), breaks = seq(1,8,1)) + 
   theme(axis.text = element_text(size = 18), title = element_text(size = 20), legend.position = "none") +
   scale_fill_manual(values=group_colors_fill) +
   geom_ribbon(alpha = 0.5, color = NA) +

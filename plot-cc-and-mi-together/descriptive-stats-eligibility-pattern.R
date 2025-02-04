@@ -64,7 +64,6 @@ dat_stats_by_dp <- full_join(x = dat_all,
                                           which_pattern == which_pattern))
 
 dat_stats_by_dp <- dat_stats_by_dp %>% 
-  mutate(decision_point_factor = as_factor(decision_point)) %>%
   mutate(count = replace(count, is.na(count), 0),
          n_observed = replace(n_observed, count == 0, 0))
 
@@ -77,35 +76,54 @@ dat_stats_by_dp <- dat_stats_by_dp %>%
     .default = NULL
   )) %>%
   mutate(which_pattern_code_factor = case_when(
-    which_pattern == 1 ~ "Pattern 1",
-    which_pattern == 2 ~ "Pattern 2",
-    which_pattern == 3 ~ "Pattern 3",
-    which_pattern == 4 ~ "Pattern 4",
+    which_pattern == 1 ~ "Pattern 1 only",
+    which_pattern == 2 ~ "Pattern 2 only",
+    which_pattern == 3 ~ "Pattern 3 only",
+    which_pattern == 4 ~ "Pattern 4 only",
     .default = NULL
   )) %>%
   mutate(which_pattern_factor = as_factor(which_pattern_factor),
          which_pattern_code_factor = as_factor(which_pattern_code_factor))
 
-group_colors <- c("Pattern 1" = "darkviolet", 
-                  "Pattern 2" = "darkviolet", 
-                  "Pattern 3" = "darkviolet", 
-                  "Pattern 4" = "darkviolet")
+dat_stats_by_dp_subset <- dat_stats_by_dp %>% filter(which_pattern !=4)
 
-ggplot(dat_stats_by_dp, aes(x = decision_point, y = count, color = which_pattern_code_factor)) +
+ggplot(dat_stats_by_dp_subset, aes(x = decision_point, y = count, group = which_pattern_code_factor)) +
   scale_y_continuous(name = "No. of participants", limits = c(-5,100), breaks = seq(0,1000,20)) +
-  scale_x_continuous(name = "Decision Point", limits = c(0,60), breaks = seq(0,60,6)) + 
-  geom_line(linewidth = 1.5, alpha = 0.4) +
-  geom_point(size = 4, alpha = 0.4) +
-  scale_color_manual(values=group_colors) +
+  scale_x_continuous(name = "Decision Point", limits = c(0,60), breaks = seq(0,60,20)) + 
+  geom_line(linewidth = 1.5, alpha = 1, color = "firebrick") +
+  geom_point(shape = 24, colour = "firebrick", fill = "pink", size = 3, stroke = 3) +
   theme(axis.text = element_text(size = 18), legend.position = "none", axis.title.x = element_text(size = 18), axis.title.y = element_text(size = 18)) +
   facet_wrap(~which_pattern_code_factor) +
   theme(strip.text.x = element_text(size = 18, colour = "black", angle = 0)) +
-  geom_line(aes(x = decision_point, y = n_observed, color = which_pattern_code_factor), linewidth = 1.5, alpha = 1) + 
-  geom_point(aes(x = decision_point, y = n_observed, color = which_pattern_code_factor), size = 4, alpha = 1) +
-  geom_hline(yintercept = 0, linetype = "dashed", linewidth = 1, colour = "red", alpha = 1) +
-  geom_jitter(position = position_jitter(width = 0, height = 0.50, seed = 100))
+  geom_line(aes(x = decision_point, y = n_observed), color = "black", linewidth = 1.5, alpha = 1) + 
+  geom_point(aes(x = decision_point, y = n_observed), color = "black", shape = 21, fill = "gray", size = 3, stroke = 3, alpha = 1) +
+  geom_hline(yintercept = 0, linetype = "dashed", linewidth = 1, colour = "red", alpha = 1)
   
-ggsave(filename = file.path("plot-cc-and-mi-together", "eligibility_pattern_descriptive_stats_totalcount_by_dp.png"), width = 20, height = 12, units = "in", dpi = 1000)
+ggsave(filename = file.path("plot-cc-and-mi-together", "eligibility_pattern_descriptive_stats_totalcount_by_dp.png"), width = 24, height = 8, units = "in", dpi = 1000)
+
+dat_stats_by_dp_collapsed <- dat_stats_by_dp %>%
+  group_by(decision_point) %>%
+  summarise(count_ineligible = sum(1*(which_pattern ==4)*count),
+            count_eligible = sum(1*(which_pattern !=4)*count),
+            n_observed_eligible = sum(1*(which_pattern !=4)*n_observed)) %>%
+  mutate(agg_pattern = "Patterns 1-3 Combined vs. Pattern 4")
+
+ggplot(dat_stats_by_dp_collapsed, aes(x = decision_point, y = count_eligible)) +
+  geom_line(aes(x = decision_point, y = count_ineligible), color = "darkgreen", linewidth = 1.5, alpha = 1) + 
+  geom_point(aes(x = decision_point, y = count_ineligible), color = "darkgreen", shape = 22, fill = "green", size = 3, stroke = 3, alpha = 1) +
+  scale_y_continuous(name = "No. of participants", limits = c(-5,100), breaks = seq(0,1000,20)) +
+  scale_x_continuous(name = "Decision Point", limits = c(0,60), breaks = seq(0,60,20)) + 
+  geom_line(linewidth = 1.5, alpha = 1, color = "firebrick") +
+  geom_point(shape = 24, colour = "firebrick", fill = "pink", size = 3, stroke = 3) +
+  geom_line(aes(x = decision_point, y = n_observed_eligible), color = "black", linewidth = 1.5, alpha = 1) + 
+  geom_point(aes(x = decision_point, y = n_observed_eligible), color = "black", shape = 21, fill = "gray", size = 3, stroke = 3, alpha = 1) +
+  theme(axis.text = element_text(size = 18), legend.position = "none", axis.title.x = element_text(size = 18), axis.title.y = element_text(size = 18)) +
+  facet_wrap(~agg_pattern) +
+  theme(strip.text.x = element_text(size = 18, colour = "black", angle = 0)) +
+  geom_hline(yintercept = 0, linetype = "dashed", linewidth = 1, colour = "red", alpha = 1)
+
+ggsave(filename = file.path("plot-cc-and-mi-together", "eligibility_pattern_descriptive_stats_aggregate_totalcount_by_dp.png"), width = 8, height = 8, units = "in", dpi = 1000)
+
 
 if(file.exists("plot-cc-and-mi-together/Thumbs.db")){
   file.remove("plot-cc-and-mi-together/Thumbs.db")

@@ -41,15 +41,49 @@ ggplot(all_results, aes(x = decision_point, y = est, ymin = conf_int_lb, ymax = 
   scale_y_continuous(name = "Self-Efficacy", limits = c(0,4), breaks = seq(0,4,0.5)) +
   scale_x_continuous(name = "Decision Point", limits = c(6,54), breaks = seq(6,54,6)) + 
   theme(axis.text = element_text(size = 18), title = element_text(size = 20), legend.position = "none") +
+  scale_color_manual(values=group_colors) +
   scale_fill_manual(values=group_colors_fill) +
   geom_ribbon(alpha = 0.5, color = NA) +
-  scale_color_manual(values=group_colors) +
   geom_line(linewidth = 2) + geom_point(size = 4) +
+  #geom_smooth(linewidth = 2, se = TRUE) +
   facet_grid(where_from ~ what) +
   theme(strip.text.x = element_text(size = 18, colour = "black", angle = 0)) +
   theme(strip.text.y = element_text(size = 18, colour = "black", angle = 0))
 
 ggsave(filename = file.path("plot-cc-and-mi-together", "time_specific_means_CI90.png"), width = 20, height = 12, units = "in", dpi = 1000)
+
+ggplot(all_results, aes(x = decision_point, y = est, ymin = conf_int_lb, ymax = conf_int_ub, color = where_from, fill = where_from)) +
+  scale_y_continuous(name = "Self-Efficacy", limits = c(0,4), breaks = seq(0,4,0.5)) +
+  scale_x_continuous(name = "Decision Point", limits = c(6,54), breaks = seq(6,54,6)) + 
+  theme(axis.text = element_text(size = 18), title = element_text(size = 20), legend.position = "none") +
+  scale_color_manual(values=group_colors) +
+  scale_fill_manual(values=group_colors_fill) +
+  geom_smooth(linewidth = 2, se = TRUE, span = 0.3, level = 0.90) +
+  facet_grid(~ what) +
+  theme(strip.text.x = element_text(size = 18, colour = "black", angle = 0)) +
+  theme(strip.text.y = element_text(size = 18, colour = "black", angle = 0))
+
+ggsave(filename = file.path("plot-cc-and-mi-together", "time_specific_means_CI90_loess.png"), width = 20, height = 6, units = "in", dpi = 1000)
+
+ppc_results <- data.frame(where_from = "MI", 
+                          decision_point = c(7:54, 7:54, 7:54),
+                          what = c(rep("(a) More Effortful Prompt", 48), 
+                                   rep("(b) Low Effort Prompt", 48), 
+                                   rep("(c) No Prompt", 48)), 
+                          ppc_est = c(dat_ppc_high_effort_prompt_by_dp$ppc_est, dat_ppc_low_effort_prompt_by_dp$ppc_est, dat_ppc_no_prompt_by_dp$ppc_est))
+
+ggplot(ppc_results, aes(x = decision_point, y = ppc_est)) +
+  scale_y_continuous(name = "Posterior Predictive P-Value", limits = c(0,1), breaks = seq(0,1,0.2)) +
+  scale_x_continuous(name = "Decision Point", limits = c(6,54), breaks = seq(6,54,6)) + 
+  theme(axis.text = element_text(size = 18), title = element_text(size = 20), legend.position = "none") +
+  geom_line(linewidth = 2) + geom_point(size = 4) +
+  facet_grid(~ what) +
+  theme(strip.text.x = element_text(size = 18, colour = "black", angle = 0)) +
+  theme(strip.text.y = element_text(size = 18, colour = "black", angle = 0)) +
+  geom_hline(yintercept = 0.95, linetype = "dashed", linewidth = 2, colour = "red") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", linewidth = 2, colour = "red")
+
+ggsave(filename = file.path("plot-cc-and-mi-together", "ppc_time_specific_means.png"), width = 20, height = 6, units = "in", dpi = 1000)
 
 if(file.exists("plot-cc-and-mi-together/Thumbs.db")){
   file.remove("plot-cc-and-mi-together/Thumbs.db")
