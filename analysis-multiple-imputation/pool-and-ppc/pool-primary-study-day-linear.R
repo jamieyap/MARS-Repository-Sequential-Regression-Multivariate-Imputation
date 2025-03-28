@@ -11,6 +11,7 @@ rm(list = ls())
 source("paths.R")
 library(tidyverse)
 library(mice)
+source(file = file.path("analysis-multiple-imputation", "pool-and-ppc", "pool-utils.R"))
 
 # Note that dplyr::select clashes with MASS::select and so we have this line to be
 # able to use the select function from the dplyr package while having MASS loaded too
@@ -30,6 +31,8 @@ num_terms <- nrow(results_obj$causal_excursion_effect)
 
 list_pooled_est <- list()
 list_pooled_std_err <- list()
+list_pool_manual_output <- list()
+list_pool_stats <- list()
 
 for(j in 1:num_terms){
   list_Q <- list()
@@ -46,6 +49,10 @@ for(j in 1:num_terms){
     }
   }
   pool_manual <- pool.scalar(Q = unlist(list_Q), U = unlist(list_U), n = num_participants, k = 1)
+  pool_stats <- calculate_pool_statistics2(degrees_of_freedom = num_participants - num_terms, pool_manual = pool_manual)
+  list_pool_stats <- append(list_pool_stats, list(pool_stats))
+  
+  list_pool_manual_output <- append(list_pool_manual_output, list(pool_manual))
   list_pooled_est <- append(list_pooled_est, pool_manual$qbar)
   list_pooled_std_err <- append(list_pooled_std_err, sqrt(pool_manual$t))
 }
@@ -60,6 +67,9 @@ fit_pooled[["p_value"]] <- 2*pnorm(abs(fit_pooled[["Estimate"]]/fit_pooled[["Std
 row.names(fit_pooled) <- c("Treatment (Prompt = 1, No Prompt = 0)", "Treatment x Day", paste("Treatment Effect on Day ", 1:8, sep = ""))
 fit_pooled_causal <- fit_pooled
 print(fit_pooled_causal)
+
+dat_pool_stats <- bind_rows(list_pool_stats)
+row.names(dat_pool_stats) <- row.names(results_obj$causal_excursion_effect)
 
 # Control part of the analysis model ------------------------------------------
 results_obj <- readRDS(file = file.path(path_multiple_imputation_pipeline_data, "mi-analysis-results", 1, "results_obj_primary_study_day_linear.rds"))
@@ -149,9 +159,10 @@ dat_pbcom <- data.frame(pbcom_est, pbcom_stderr)
 fit_pooled_causal_formatted <- format(round(fit_pooled_causal, 5), nsmall = 5)
 fit_pooled_control_formatted <- format(round(fit_pooled_control, 5), nsmall = 5)
 dat_pbcom_formatted <- format(round(dat_pbcom, 5), nsmall = 5)
+dat_pool_stats_formatted <- format(round(dat_pool_stats, 5), nsmall = 5)
 
 write.csv(fit_pooled_causal_formatted, file = file.path("analysis-multiple-imputation", "formatted-output", "pooled_primary_causal_study_day_linear.csv"), row.names = TRUE)
 write.csv(fit_pooled_control_formatted, file = file.path("analysis-multiple-imputation", "formatted-output", "pooled_primary_control_study_day_linear.csv"), row.names = TRUE)
 write.csv(dat_pbcom_formatted, file = file.path("analysis-multiple-imputation", "formatted-output", "pbcom_primary_study_day_linear.csv"), row.names = TRUE)
-
+write.csv(dat_pool_stats_formatted, file = file.path("analysis-multiple-imputation", "formatted-output", "pool_stats_primary_study_day_linear.csv"), row.names = TRUE)
 
