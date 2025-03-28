@@ -45,7 +45,6 @@ ggplot(all_results, aes(x = decision_point, y = est, ymin = conf_int_lb, ymax = 
   scale_fill_manual(values=group_colors_fill) +
   geom_ribbon(alpha = 0.5, color = NA) +
   geom_line(linewidth = 2) + geom_point(size = 4) +
-  #geom_smooth(linewidth = 2, se = TRUE) +
   facet_grid(where_from ~ what) +
   theme(strip.text.x = element_text(size = 18, colour = "black", angle = 0)) +
   theme(strip.text.y = element_text(size = 18, colour = "black", angle = 0))
@@ -70,7 +69,8 @@ ppc_results <- data.frame(where_from = "MI",
                           what = c(rep("(a) More Effortful Prompt", 48), 
                                    rep("(b) Low Effort Prompt", 48), 
                                    rep("(c) No Prompt", 48)), 
-                          ppc_est = c(dat_ppc_high_effort_prompt_by_dp$ppc_est, dat_ppc_low_effort_prompt_by_dp$ppc_est, dat_ppc_no_prompt_by_dp$ppc_est))
+                          ppc_est = c(dat_ppc_high_effort_prompt_by_dp$ppc_est, dat_ppc_low_effort_prompt_by_dp$ppc_est, dat_ppc_no_prompt_by_dp$ppc_est),
+                          fmi = c(dat_all_pool_stats_high_effort_prompt_by_dp$gamma, dat_all_pool_stats_low_effort_prompt_by_dp$gamma, dat_all_pool_stats_no_prompt_by_dp$gamma))
 
 ggplot(ppc_results, aes(x = decision_point, y = ppc_est)) +
   scale_y_continuous(name = "Posterior Predictive P-Value", limits = c(0,1), breaks = seq(0,1,0.2)) +
@@ -84,6 +84,18 @@ ggplot(ppc_results, aes(x = decision_point, y = ppc_est)) +
   geom_hline(yintercept = 0.05, linetype = "dashed", linewidth = 2, colour = "red")
 
 ggsave(filename = file.path("plot-cc-and-mi-together", "ppc_time_specific_means.png"), width = 20, height = 6, units = "in", dpi = 1000)
+
+ggplot(ppc_results, aes(x = decision_point, y = fmi)) +
+  scale_y_continuous(name = "Fraction of Missing Information", limits = c(0,1), breaks = seq(0,1,0.2)) +
+  scale_x_continuous(name = "Decision Point", limits = c(6,54), breaks = seq(6,54,6)) + 
+  theme(axis.text = element_text(size = 18), title = element_text(size = 20), legend.position = "none") +
+  geom_line(linewidth = 2) + geom_point(size = 4) +
+  facet_grid(~ what) +
+  theme(strip.text.x = element_text(size = 18, colour = "black", angle = 0)) +
+  theme(strip.text.y = element_text(size = 18, colour = "black", angle = 0)) +
+  geom_hline(yintercept = 0.95, linetype = "dashed", linewidth = 2, colour = "red")
+
+ggsave(filename = file.path("plot-cc-and-mi-together", "fmi_time_specific_means.png"), width = 20, height = 6, units = "in", dpi = 1000)
 
 if(file.exists("plot-cc-and-mi-together/Thumbs.db")){
   file.remove("plot-cc-and-mi-together/Thumbs.db")
