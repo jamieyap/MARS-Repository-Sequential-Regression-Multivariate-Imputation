@@ -2,7 +2,7 @@
 
 ## Description
 
-The material in this repository contains code for implementing an extension of sequential regression multivariate imputation for micro-randomized trials. This work was motivated by the Mobile Assistance for Regulating Smoking (MARS) micro-randomized trial.
+The material in this repository contains code for implementing multivariate imputation for micro-randomized trials motivated by the Mobile Assistance for Regulating Smoking (MARS) micro-randomized trial.
 
 *Keywords: Missing Data, Multiple Imputation, Causal Inference, Intensive Longitudinal Data, Adaptive Interventions, Mobile Health (mHealth), Micro-Randomized Trial (MRT)*
 
