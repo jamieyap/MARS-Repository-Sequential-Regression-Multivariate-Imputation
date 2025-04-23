@@ -7,7 +7,7 @@ source(file = file.path("analysis-multiple-imputation", "mi-set-up.R"))
 rm(list = ls())
 
 ###############################################################################
-# Generate imputed datasets for decision points within stratum 1
+# Generate imputed datasets for decision points within stratum 3
 ###############################################################################
 for(.__current_idx in 1:.__total_imputed_datasets){
   for(.__current_dp in 2:.__maximum_march_forward){
