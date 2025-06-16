@@ -12,6 +12,6 @@ rm(list = ls())
 for(.__current_idx in 1:.__total_imputed_datasets){
   source("paths.R")
   source(file.path(.__path_code, "analysis-multiple-imputation", "generate-multiply-imputed-datasets", "impute-sparse-restrictions-stratum-01.R"))
-  print(list_logged_convergence_initial_model)
+  print(list_mice_model)
 }
 

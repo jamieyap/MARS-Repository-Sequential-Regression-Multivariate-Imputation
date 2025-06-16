@@ -120,8 +120,6 @@ replicates_var <- readRDS(file = file.path(path_multiple_imputation_pipeline_dat
 rows_with_did_not_converge <- 1*(rowMeans(is.na(replicates_est)) > 0)
 n_rows_with_did_not_converge <- sum(rows_with_did_not_converge)
 print(n_rows_with_did_not_converge)
-# > print(n_rows_with_did_not_converge)
-# [1] 2
 
 comparison_est <- replicates_est >= mi_est
 ppc_est <- colMeans(comparison_est, na.rm = TRUE)

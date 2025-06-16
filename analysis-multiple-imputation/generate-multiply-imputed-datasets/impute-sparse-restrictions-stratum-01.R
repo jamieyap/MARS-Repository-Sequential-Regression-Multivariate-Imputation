@@ -110,23 +110,28 @@ my_list <- list("cigarette_counts" = NULL,
 
 this_outcome <- "cigarette_counts"
 my_list[[this_outcome]] <- c(this_outcome,
-                             "is_high_effort", "is_low_effort",
+                             # Baseline variables
                              "baseline_tobacco_history",
-                             "Nicotine_dep",
-                             "any_response_2qs")
+                             "pp1_1")
 
 this_outcome <- "motivation_cig"
 my_list[[this_outcome]] <- c(this_outcome,
-                             "is_high_effort", "is_low_effort",
+                             # Baseline variables
                              "TSAM_Total",
+                             # Tracked time-varying covariates
                              "any_response_2qs",
+                             "is_high_effort", "is_low_effort",
+                             # EMA measured time-varying covariates
                              "cigarette_counts")
 
 this_outcome <- "self_efficacy_cig"
 my_list[[this_outcome]] <- c(this_outcome,
-                             "is_high_effort", "is_low_effort",
+                             # Baseline variables
                              "SE_total",
+                             # Tracked time-varying covariates
                              "any_response_2qs",
+                             "is_high_effort", "is_low_effort",
+                             # EMA measured time-varying covariates
                              "cigarette_counts",
                              "motivation_cig")
 
@@ -156,20 +161,15 @@ list_logged_convergence_stepwise_model <- list("cigarette_counts" = NULL,
 ###############################################################################
 this_outcome <- "cigarette_counts"
 
-# Initialize list and matrix which will store imputation method and formula ---
-dummy_list <- as.list(colnames(dat_stratum))
-dummy_list <- lapply(dummy_list, function(x){return("")})
-names(dummy_list) <- colnames(dat_stratum)
-meth_list <- dummy_list
-
-vars <- colnames(dat_stratum)
-pred_mat <- matrix(0, nrow = length(vars), ncol = length(vars), dimnames = list(vars, vars))
-
 check_convergence_result <- TRUE
 
 consider_these_vars <- my_list[[which(names(my_list) == this_outcome)]]
 dat_for_variable_selection <- dat_stratum %>% filter(replicate_id == 0) %>% select(all_of(consider_these_vars))
-fit <- tryCatch(expr = {glm(as.formula(paste(this_outcome, "~ .", sep = "")), family = gaussian, data = dat_for_variable_selection)}, 
+# Include all main effects
+# Do not include any two-way interactions
+fit <- tryCatch(expr = {glm(as.formula(paste(this_outcome, "~ .", sep = "")), 
+                            family = gaussian, 
+                            data = dat_for_variable_selection)}, 
                 warning = function(w){"Hey, a warning"})
 check_convergence_result <- (class(fit)[[1]] == "glm")  # fit will be of class "character" if there was a convergence issue
 
@@ -182,7 +182,7 @@ if(check_convergence_result == TRUE){
             scope = list(lower = as.formula("~1"),
                          upper = fit$formula),
             trace = FALSE, 
-            k = use_penalty)  # To use AUC, set k=2. To use BIC, set k = log(n)
+            k = use_penalty)  # To use AIC, set k=2. To use BIC, set k = log(n)
   }, warning = function(w){"Hey, a warning"})
   
   stepwise_convergence <- (class(fit_step)[[1]] == "glm")
@@ -194,17 +194,16 @@ if(check_convergence_result == TRUE){
   }
   
   info_criterion <- extractAIC(use_fit, k = use_penalty)[[2]]  # Calculated info criterion of selected model
-  
   selected_vars <- names(use_fit$coefficients)
   selected_vars <- selected_vars[-1] # remove the intercept term because the predictorMatrix argument does not allow a row/column for that
   
   if(length(selected_vars) == 0){
-    meth_list[[this_outcome]] <- "pmm"
-    
     dummy_list <- as.list(colnames(dat_stratum))
     dummy_list <- lapply(dummy_list, function(x){return("")})
     names(dummy_list) <- colnames(dat_stratum)
     formula_list <- dummy_list
+    meth_list <- dummy_list
+    meth_list[[this_outcome]] <- "pmm"
     
     for(i in 1:length(formula_list)){
       fmla <- as.formula(paste(names(formula_list)[i], "~ 1", sep = ""))
@@ -218,26 +217,69 @@ if(check_convergence_result == TRUE){
                 formulas = formula_list)
     dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
   }else{
-    for(i in 1:length(selected_vars)){
-      pred_mat[this_outcome, selected_vars[i]] <- 1
-    }
+    use_fit_design_matrix <- model.matrix(use_fit, na.action = na.pass)
+    which_is_interaction <- grepl(pattern = ":", x = colnames(use_fit_design_matrix), fixed = TRUE)
     
-    meth_list[[this_outcome]] <- "pmm"
-    imp <- mice(data = dat_stratum, 
-                m = 1, 
-                maxit = use_maxit_value,
-                meth =  meth_list,
-                predictorMatrix = pred_mat)
-    dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
+    if(sum(which_is_interaction) == 0){
+      # None of the interaction terms were selected; imputation model just includes main effect terms
+      dummy_list <- as.list(colnames(dat_stratum))
+      dummy_list <- lapply(dummy_list, function(x){return("")})
+      names(dummy_list) <- colnames(dat_stratum)
+      meth_list <- dummy_list
+      meth_list[[this_outcome]] <- "pmm"
+      
+      vars <- colnames(dat_stratum)
+      pred_mat <- matrix(0, nrow = length(vars), ncol = length(vars), dimnames = list(vars, vars))
+      for(i in 1:length(selected_vars)){
+        pred_mat[this_outcome, selected_vars[i]] <- 1
+      }
+      
+      imp <- mice(data = dat_stratum, 
+                  m = 1,
+                  maxit = use_maxit_value,
+                  meth =  meth_list,
+                  predictorMatrix = pred_mat)
+      dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
+    }else{
+      # At least one of the interaction terms were selected; imputation model will include main effect terms and one or possibly more interaction terms
+      cols_id <- dat_stratum %>% filter(replicate_id == 0) %>% select(all_of(c("participant_id", "decision_point")))
+      names_interaction_terms <- colnames(use_fit_design_matrix)[which_is_interaction]
+      cols_interaction <- use_fit_design_matrix %>% as.data.frame(.) %>% select(all_of(names_interaction_terms))
+      dat_interaction <- cbind(cols_id, cols_interaction)
+      dat_stratum <- left_join(x = dat_stratum, y = dat_interaction, by = c("participant_id", "decision_point"))
+      
+      dummy_list <- as.list(colnames(dat_stratum))
+      dummy_list <- lapply(dummy_list, function(x){return("")})
+      names(dummy_list) <- colnames(dat_stratum)
+      meth_list <- dummy_list
+      meth_list[[this_outcome]] <- "pmm"
+      
+      vars <- colnames(dat_stratum)
+      pred_mat <- matrix(0, nrow = length(vars), ncol = length(vars), dimnames = list(vars, vars))
+      for(i in 1:length(selected_vars)){
+        pred_mat[this_outcome, selected_vars[i]] <- 1
+      }
+      
+      imp <- mice(data = dat_stratum, 
+                  m = 1,
+                  maxit = use_maxit_value,
+                  meth =  meth_list,
+                  predictorMatrix = pred_mat)
+      dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
+      
+      dat_stratum_completed <- dat_stratum_completed %>% select(-any_of(names_interaction_terms))
+      dat_stratum <- dat_stratum %>% select(-any_of(names_interaction_terms))
+    }
   }
 }else{
   stepwise_convergence <- TRUE # This is just a placeholder value for this condition
-  meth_list[[this_outcome]] <- "pmm"
   
   dummy_list <- as.list(colnames(dat_stratum))
   dummy_list <- lapply(dummy_list, function(x){return("")})
   names(dummy_list) <- colnames(dat_stratum)
   formula_list <- dummy_list
+  meth_list <- dummy_list
+  meth_list[[this_outcome]] <- "pmm"
   
   for(i in 1:length(formula_list)){
     fmla <- as.formula(paste(names(formula_list)[i], "~ 1", sep = ""))
@@ -265,20 +307,17 @@ list_logged_convergence_stepwise_model[[which(names(list_logged_convergence_step
 ###############################################################################
 this_outcome <- "motivation_cig"
 
-# Initialize list and matrix which will store imputation method and formula ---
-dummy_list <- as.list(colnames(dat_stratum))
-dummy_list <- lapply(dummy_list, function(x){return("")})
-names(dummy_list) <- colnames(dat_stratum)
-meth_list <- dummy_list
-
-vars <- colnames(dat_stratum)
-pred_mat <- matrix(0, nrow = length(vars), ncol = length(vars), dimnames = list(vars, vars))
-
 check_convergence_result <- TRUE
 
 consider_these_vars <- my_list[[which(names(my_list) == this_outcome)]]
 dat_for_variable_selection <- dat_stratum %>% filter(replicate_id == 0) %>% select(all_of(consider_these_vars))
-fit <- tryCatch(expr = {glm(as.formula(paste(this_outcome, "~ .", sep = "")), family = gaussian, data = dat_for_variable_selection)}, 
+# Include all main effects, the two-way interaction between is_high_effort and the rest of the main effect terms, 
+# the two-way interaction between is_low_effort and the rest of the main effect terms,
+# but do not include the two-way interaction between is_high_effort and is_low_effort
+# Note that this formula does not include two-way interactions that do not involve is_high_effort or is_low_effort
+fit <- tryCatch(expr = {glm(as.formula(paste(this_outcome, "~ . + is_high_effort*(.) + is_low_effort*(.) - is_high_effort:is_low_effort", sep = "")), 
+                            family = gaussian, 
+                            data = dat_for_variable_selection)}, 
                 warning = function(w){"Hey, a warning"})
 check_convergence_result <- (class(fit)[[1]] == "glm")  # fit will be of class "character" if there was a convergence issue
 
@@ -291,7 +330,7 @@ if(check_convergence_result == TRUE){
             scope = list(lower = as.formula("~1"),
                          upper = fit$formula),
             trace = FALSE, 
-            k = use_penalty)  # To use AUC, set k=2. To use BIC, set k = log(n)
+            k = use_penalty)  # To use AIC, set k=2. To use BIC, set k = log(n)
   }, warning = function(w){"Hey, a warning"})
   
   stepwise_convergence <- (class(fit_step)[[1]] == "glm")
@@ -303,17 +342,16 @@ if(check_convergence_result == TRUE){
   }
   
   info_criterion <- extractAIC(use_fit, k = use_penalty)[[2]]  # Calculated info criterion of selected model
-  
   selected_vars <- names(use_fit$coefficients)
   selected_vars <- selected_vars[-1] # remove the intercept term because the predictorMatrix argument does not allow a row/column for that
   
   if(length(selected_vars) == 0){
-    meth_list[[this_outcome]] <- "pmm"
-    
     dummy_list <- as.list(colnames(dat_stratum))
     dummy_list <- lapply(dummy_list, function(x){return("")})
     names(dummy_list) <- colnames(dat_stratum)
     formula_list <- dummy_list
+    meth_list <- dummy_list
+    meth_list[[this_outcome]] <- "pmm"
     
     for(i in 1:length(formula_list)){
       fmla <- as.formula(paste(names(formula_list)[i], "~ 1", sep = ""))
@@ -327,26 +365,69 @@ if(check_convergence_result == TRUE){
                 formulas = formula_list)
     dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
   }else{
-    for(i in 1:length(selected_vars)){
-      pred_mat[this_outcome, selected_vars[i]] <- 1
-    }
+    use_fit_design_matrix <- model.matrix(use_fit, na.action = na.pass)
+    which_is_interaction <- grepl(pattern = ":", x = colnames(use_fit_design_matrix), fixed = TRUE)
     
-    meth_list[[this_outcome]] <- "pmm"
-    imp <- mice(data = dat_stratum, 
-                m = 1, 
-                maxit = use_maxit_value,
-                meth =  meth_list,
-                predictorMatrix = pred_mat)
-    dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
+    if(sum(which_is_interaction) == 0){
+      # None of the interaction terms were selected; imputation model just includes main effect terms
+      dummy_list <- as.list(colnames(dat_stratum))
+      dummy_list <- lapply(dummy_list, function(x){return("")})
+      names(dummy_list) <- colnames(dat_stratum)
+      meth_list <- dummy_list
+      meth_list[[this_outcome]] <- "pmm"
+      
+      vars <- colnames(dat_stratum)
+      pred_mat <- matrix(0, nrow = length(vars), ncol = length(vars), dimnames = list(vars, vars))
+      for(i in 1:length(selected_vars)){
+        pred_mat[this_outcome, selected_vars[i]] <- 1
+      }
+      
+      imp <- mice(data = dat_stratum, 
+                  m = 1,
+                  maxit = use_maxit_value,
+                  meth =  meth_list,
+                  predictorMatrix = pred_mat)
+      dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
+    }else{
+      # At least one of the interaction terms were selected; imputation model will include main effect terms and one or possibly more interaction terms
+      cols_id <- dat_stratum %>% filter(replicate_id == 0) %>% select(all_of(c("participant_id", "decision_point")))
+      names_interaction_terms <- colnames(use_fit_design_matrix)[which_is_interaction]
+      cols_interaction <- use_fit_design_matrix %>% as.data.frame(.) %>% select(all_of(names_interaction_terms))
+      dat_interaction <- cbind(cols_id, cols_interaction)
+      dat_stratum <- left_join(x = dat_stratum, y = dat_interaction, by = c("participant_id", "decision_point"))
+      
+      dummy_list <- as.list(colnames(dat_stratum))
+      dummy_list <- lapply(dummy_list, function(x){return("")})
+      names(dummy_list) <- colnames(dat_stratum)
+      meth_list <- dummy_list
+      meth_list[[this_outcome]] <- "pmm"
+      
+      vars <- colnames(dat_stratum)
+      pred_mat <- matrix(0, nrow = length(vars), ncol = length(vars), dimnames = list(vars, vars))
+      for(i in 1:length(selected_vars)){
+        pred_mat[this_outcome, selected_vars[i]] <- 1
+      }
+      
+      imp <- mice(data = dat_stratum, 
+                  m = 1,
+                  maxit = use_maxit_value,
+                  meth =  meth_list,
+                  predictorMatrix = pred_mat)
+      dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
+      
+      dat_stratum_completed <- dat_stratum_completed %>% select(-any_of(names_interaction_terms))
+      dat_stratum <- dat_stratum %>% select(-any_of(names_interaction_terms))
+    }
   }
 }else{
   stepwise_convergence <- TRUE # This is just a placeholder value for this condition
-  meth_list[[this_outcome]] <- "pmm"
   
   dummy_list <- as.list(colnames(dat_stratum))
   dummy_list <- lapply(dummy_list, function(x){return("")})
   names(dummy_list) <- colnames(dat_stratum)
   formula_list <- dummy_list
+  meth_list <- dummy_list
+  meth_list[[this_outcome]] <- "pmm"
   
   for(i in 1:length(formula_list)){
     fmla <- as.formula(paste(names(formula_list)[i], "~ 1", sep = ""))
@@ -374,20 +455,17 @@ list_logged_convergence_stepwise_model[[which(names(list_logged_convergence_step
 ###############################################################################
 this_outcome <- "self_efficacy_cig"
 
-# Initialize list and matrix which will store imputation method and formula ---
-dummy_list <- as.list(colnames(dat_stratum))
-dummy_list <- lapply(dummy_list, function(x){return("")})
-names(dummy_list) <- colnames(dat_stratum)
-meth_list <- dummy_list
-
-vars <- colnames(dat_stratum)
-pred_mat <- matrix(0, nrow = length(vars), ncol = length(vars), dimnames = list(vars, vars))
-
 check_convergence_result <- TRUE
 
 consider_these_vars <- my_list[[which(names(my_list) == this_outcome)]]
 dat_for_variable_selection <- dat_stratum %>% filter(replicate_id == 0) %>% select(all_of(consider_these_vars))
-fit <- tryCatch(expr = {glm(as.formula(paste(this_outcome, "~ .", sep = "")), family = gaussian, data = dat_for_variable_selection)}, 
+# Include all main effects, the two-way interaction between is_high_effort and the rest of the main effect terms, 
+# the two-way interaction between is_low_effort and the rest of the main effect terms,
+# but do not include the two-way interaction between is_high_effort and is_low_effort
+# Note that this formula does not include two-way interactions that do not involve is_high_effort or is_low_effort
+fit <- tryCatch(expr = {glm(as.formula(paste(this_outcome, "~ . + is_high_effort*(.) + is_low_effort*(.) - is_high_effort:is_low_effort", sep = "")), 
+                            family = gaussian, 
+                            data = dat_for_variable_selection)}, 
                 warning = function(w){"Hey, a warning"})
 check_convergence_result <- (class(fit)[[1]] == "glm")  # fit will be of class "character" if there was a convergence issue
 
@@ -397,10 +475,10 @@ if(check_convergence_result == TRUE){
   fit_step <- tryCatch(expr = {
     stepAIC(fit, 
             direction = "both",
-            scope = list(lower = as.formula("~is_high_effort + is_low_effort"),
+            scope = list(lower = as.formula("~1"),
                          upper = fit$formula),
             trace = FALSE, 
-            k = use_penalty)  # To use AUC, set k=2. To use BIC, set k = log(n)
+            k = use_penalty)  # To use AIC, set k=2. To use BIC, set k = log(n)
   }, warning = function(w){"Hey, a warning"})
   
   stepwise_convergence <- (class(fit_step)[[1]] == "glm")
@@ -412,17 +490,16 @@ if(check_convergence_result == TRUE){
   }
   
   info_criterion <- extractAIC(use_fit, k = use_penalty)[[2]]  # Calculated info criterion of selected model
-  
   selected_vars <- names(use_fit$coefficients)
   selected_vars <- selected_vars[-1] # remove the intercept term because the predictorMatrix argument does not allow a row/column for that
   
   if(length(selected_vars) == 0){
-    meth_list[[this_outcome]] <- "pmm"
-    
     dummy_list <- as.list(colnames(dat_stratum))
     dummy_list <- lapply(dummy_list, function(x){return("")})
     names(dummy_list) <- colnames(dat_stratum)
     formula_list <- dummy_list
+    meth_list <- dummy_list
+    meth_list[[this_outcome]] <- "pmm"
     
     for(i in 1:length(formula_list)){
       fmla <- as.formula(paste(names(formula_list)[i], "~ 1", sep = ""))
@@ -436,26 +513,69 @@ if(check_convergence_result == TRUE){
                 formulas = formula_list)
     dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
   }else{
-    for(i in 1:length(selected_vars)){
-      pred_mat[this_outcome, selected_vars[i]] <- 1
-    }
+    use_fit_design_matrix <- model.matrix(use_fit, na.action = na.pass)
+    which_is_interaction <- grepl(pattern = ":", x = colnames(use_fit_design_matrix), fixed = TRUE)
     
-    meth_list[[this_outcome]] <- "pmm"
-    imp <- mice(data = dat_stratum, 
-                m = 1, 
-                maxit = use_maxit_value,
-                meth =  meth_list,
-                predictorMatrix = pred_mat)
-    dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
+    if(sum(which_is_interaction) == 0){
+      # None of the interaction terms were selected; imputation model just includes main effect terms
+      dummy_list <- as.list(colnames(dat_stratum))
+      dummy_list <- lapply(dummy_list, function(x){return("")})
+      names(dummy_list) <- colnames(dat_stratum)
+      meth_list <- dummy_list
+      meth_list[[this_outcome]] <- "pmm"
+      
+      vars <- colnames(dat_stratum)
+      pred_mat <- matrix(0, nrow = length(vars), ncol = length(vars), dimnames = list(vars, vars))
+      for(i in 1:length(selected_vars)){
+        pred_mat[this_outcome, selected_vars[i]] <- 1
+      }
+      
+      imp <- mice(data = dat_stratum, 
+                  m = 1,
+                  maxit = use_maxit_value,
+                  meth =  meth_list,
+                  predictorMatrix = pred_mat)
+      dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
+    }else{
+      # At least one of the interaction terms were selected; imputation model will include main effect terms and one or possibly more interaction terms
+      cols_id <- dat_stratum %>% filter(replicate_id == 0) %>% select(all_of(c("participant_id", "decision_point")))
+      names_interaction_terms <- colnames(use_fit_design_matrix)[which_is_interaction]
+      cols_interaction <- use_fit_design_matrix %>% as.data.frame(.) %>% select(all_of(names_interaction_terms))
+      dat_interaction <- cbind(cols_id, cols_interaction)
+      dat_stratum <- left_join(x = dat_stratum, y = dat_interaction, by = c("participant_id", "decision_point"))
+      
+      dummy_list <- as.list(colnames(dat_stratum))
+      dummy_list <- lapply(dummy_list, function(x){return("")})
+      names(dummy_list) <- colnames(dat_stratum)
+      meth_list <- dummy_list
+      meth_list[[this_outcome]] <- "pmm"
+      
+      vars <- colnames(dat_stratum)
+      pred_mat <- matrix(0, nrow = length(vars), ncol = length(vars), dimnames = list(vars, vars))
+      for(i in 1:length(selected_vars)){
+        pred_mat[this_outcome, selected_vars[i]] <- 1
+      }
+      
+      imp <- mice(data = dat_stratum, 
+                  m = 1,
+                  maxit = use_maxit_value,
+                  meth =  meth_list,
+                  predictorMatrix = pred_mat)
+      dat_stratum_completed <- complete(imp, 1)  # Update dat_stratum
+      
+      dat_stratum_completed <- dat_stratum_completed %>% select(-any_of(names_interaction_terms))
+      dat_stratum <- dat_stratum %>% select(-any_of(names_interaction_terms))
+    }
   }
 }else{
   stepwise_convergence <- TRUE # This is just a placeholder value for this condition
-  meth_list[[this_outcome]] <- "pmm"
   
   dummy_list <- as.list(colnames(dat_stratum))
   dummy_list <- lapply(dummy_list, function(x){return("")})
   names(dummy_list) <- colnames(dat_stratum)
   formula_list <- dummy_list
+  meth_list <- dummy_list
+  meth_list[[this_outcome]] <- "pmm"
   
   for(i in 1:length(formula_list)){
     fmla <- as.formula(paste(names(formula_list)[i], "~ 1", sep = ""))

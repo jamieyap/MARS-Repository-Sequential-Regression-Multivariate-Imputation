@@ -112,3 +112,5 @@ dat_summary_prop_converged <- do.call(cbind, my_list2)
 saveRDS(my_list, file = file.path(path_multiple_imputation_pipeline_data, "sequentially-completed-datasets", paste("reshaped_list_logged_convergence_initial_model_stratum", st_num, ".rds", sep = "")))
 saveRDS(dat_summary_prop_converged, file = file.path(path_multiple_imputation_pipeline_data, "sequentially-completed-datasets", paste("dat_summary_prop_converged_initial_model_stratum", st_num, ".rds", sep = "")))
 
+write.csv(dat_summary_prop_converged, file = file.path("analysis-multiple-imputation", "formatted-output", paste("dat_summary_prop_converged_initial_model_stratum", st_num, ".csv", sep = "")), row.names = FALSE)
+

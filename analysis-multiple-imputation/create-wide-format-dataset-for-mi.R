@@ -80,10 +80,14 @@ if(maximum_replicate_id > 0){
 # imputed
 ################################################################################
 these_vars_will_not_be_imputed <- c("any_recent_eligible_dp", "eligibility", "eligibility_lag1", "elig24hrs", 
-                                    "coinflip", "is_high_effort", "is_low_effort", "matched_24hrs", "matched_recent",
+                                    "coinflip", "is_high_effort", "is_low_effort", 
+                                    "coinflip_lag1", "is_high_effort_lag1", "is_low_effort_lag1", 
+                                    "matched_24hrs", "matched_recent",
                                     "days_between_v1_and_coinflip_local", "days_between_v1_and_coinflip_local_squared", "hours_elapsed_since_most_recent_eligible", "hour_coinflip_local",
-                                    "any_response_2qs", 
-                                    "completed_app_usage_preblock", "completed_app_usage_preblock_lag1")
+                                    "any_response_2qs", "any_response_2qs_lag1", 
+                                    "completed_app_usage_preblock", "ms_spent_preblock",
+                                    "Y_nreported_past24hrs", "emi_resp_indicator_sum_past24hrs",
+                                    "Y_nreported_past24hrs_lag1", "emi_resp_indicator_sum_past24hrs_lag1")
 
 dat_timevarying_long_without_missing <- dat_primary_aim %>%
   select(replicate_id, participant_id, decision_point, all_of(these_vars_will_not_be_imputed)) %>% 
