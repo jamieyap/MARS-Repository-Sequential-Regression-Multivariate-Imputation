@@ -35,18 +35,19 @@ dat_ppc <- tibble(prior_self_efficacy = 0:4, ppc_est = ppc_est)
 
 list_all_pool_stats <- list()
 
-for(idx_decision_point in 1:5){
-  dp <- idx_decision_point
+for(idx_item_value in 1:5){
+  curr_item_value <- idx_item_value - 1
   
-  num_participants <- dat_long_completed %>% filter(decision_point == dp) %>% filter(replicate_id == 0) %>% filter((eligibility == 1) & (eligibility_lag1 == 1)) %>% filter(coinflip == 0) %>% nrow(.)
-  pool_manual <- pool.scalar(Q = mi_est[, idx_decision_point], 
-                             U = mi_var[, idx_decision_point], 
-                             n = num_participants, 
+  
+  num_participant_decision_points <- dat_long_completed %>% filter(self_efficacy_cig_lag1 == curr_item_value) %>% filter(replicate_id == 0) %>% filter((eligibility == 1) & (eligibility_lag1 == 1)) %>% filter(coinflip == 0) %>% nrow(.)
+  pool_manual <- pool.scalar(Q = mi_est[, idx_item_value], 
+                             U = mi_var[, idx_item_value], 
+                             n = num_participant_decision_points, 
                              k = 1)
   
-  pool_stats <- calculate_pool_statistics2(degrees_of_freedom = num_participants - 1, pool_manual = pool_manual)
-  pool_stats$n <- num_participants
-  pool_stats$Qbar <- mean(mi_est[, idx_decision_point])
+  pool_stats <- calculate_pool_statistics2(degrees_of_freedom = num_participant_decision_points - 1, pool_manual = pool_manual)
+  pool_stats$n <- num_participant_decision_points
+  pool_stats$Qbar <- mean(mi_est[, idx_item_value])
   pool_stats$pooled_stderr <- sqrt(pool_stats$total_var)
   pool_stats$conf_int_lb <- pool_stats$Qbar - qnorm(p = use_alpha, lower.tail = FALSE) * pool_stats$pooled_stderr
   pool_stats$conf_int_ub <- pool_stats$Qbar + qnorm(p = use_alpha, lower.tail = FALSE) * pool_stats$pooled_stderr
@@ -56,8 +57,8 @@ for(idx_decision_point in 1:5){
 
 dat_all_pool_stats <- bind_rows(list_all_pool_stats)
 dat_all_pool_stats <- dat_all_pool_stats %>% 
-  mutate(decision_point = 0:4) %>% 
-  select(decision_point, n, Qbar, pooled_stderr, conf_int_lb, conf_int_ub, everything())
+  mutate(self_efficacy_cig_lag1 = 0:4) %>% 
+  select(self_efficacy_cig_lag1, n, Qbar, pooled_stderr, conf_int_lb, conf_int_ub, everything())
 
 dat_ppc <- dat_ppc %>% round(., digits = 3)
 dat_all_pool_stats <- dat_all_pool_stats %>% round(., digits = 3)
@@ -79,18 +80,18 @@ dat_ppc <- tibble(prior_self_efficacy = 0:4, ppc_est = ppc_est)
 
 list_all_pool_stats <- list()
 
-for(idx_decision_point in 1:5){
-  dp <- idx_decision_point
+for(idx_item_value in 1:5){
+  curr_item_value <- idx_item_value - 1
   
-  num_participants <- dat_long_completed %>% filter(decision_point == dp) %>% filter(replicate_id == 0) %>% filter((eligibility == 1) & (eligibility_lag1 == 1)) %>% filter(is_high_effort == 1) %>% nrow(.)
-  pool_manual <- pool.scalar(Q = mi_est[, idx_decision_point], 
-                             U = mi_var[, idx_decision_point], 
-                             n = num_participants, 
+  num_participant_decision_points <- dat_long_completed %>% filter(self_efficacy_cig_lag1 == curr_item_value) %>% filter(replicate_id == 0) %>% filter((eligibility == 1) & (eligibility_lag1 == 1)) %>% filter(is_high_effort == 1) %>% nrow(.)
+  pool_manual <- pool.scalar(Q = mi_est[, idx_item_value], 
+                             U = mi_var[, idx_item_value], 
+                             n = num_participant_decision_points, 
                              k = 1)
   
-  pool_stats <- calculate_pool_statistics2(degrees_of_freedom = num_participants - 1, pool_manual = pool_manual)
-  pool_stats$n <- num_participants
-  pool_stats$Qbar <- mean(mi_est[, idx_decision_point])
+  pool_stats <- calculate_pool_statistics2(degrees_of_freedom = num_participant_decision_points - 1, pool_manual = pool_manual)
+  pool_stats$n <- num_participant_decision_points
+  pool_stats$Qbar <- mean(mi_est[, idx_item_value])
   pool_stats$pooled_stderr <- sqrt(pool_stats$total_var)
   pool_stats$conf_int_lb <- pool_stats$Qbar - qnorm(p = use_alpha, lower.tail = FALSE) * pool_stats$pooled_stderr
   pool_stats$conf_int_ub <- pool_stats$Qbar + qnorm(p = use_alpha, lower.tail = FALSE) * pool_stats$pooled_stderr
@@ -100,8 +101,8 @@ for(idx_decision_point in 1:5){
 
 dat_all_pool_stats <- bind_rows(list_all_pool_stats)
 dat_all_pool_stats <- dat_all_pool_stats %>% 
-  mutate(decision_point = 0:4) %>% 
-  select(decision_point, n, Qbar, pooled_stderr, conf_int_lb, conf_int_ub, everything())
+  mutate(self_efficacy_cig_lag1 = 0:4) %>% 
+  select(self_efficacy_cig_lag1, n, Qbar, pooled_stderr, conf_int_lb, conf_int_ub, everything())
 
 dat_ppc <- dat_ppc %>% round(., digits = 3)
 dat_all_pool_stats <- dat_all_pool_stats %>% round(., digits = 3)
@@ -123,18 +124,18 @@ dat_ppc <- tibble(prior_self_efficacy = 0:4, ppc_est = ppc_est)
 
 list_all_pool_stats <- list()
 
-for(idx_decision_point in 1:5){
-  dp <- idx_decision_point
+for(idx_item_value in 1:5){
+  curr_item_value <- idx_item_value - 1
   
-  num_participants <- dat_long_completed %>% filter(decision_point == dp) %>% filter(replicate_id == 0) %>% filter((eligibility == 1) & (eligibility_lag1 == 1)) %>% filter(is_low_effort == 1) %>% nrow(.)
-  pool_manual <- pool.scalar(Q = mi_est[, idx_decision_point], 
-                             U = mi_var[, idx_decision_point], 
-                             n = num_participants, 
+  num_participant_decision_points <- dat_long_completed %>% filter(self_efficacy_cig_lag1 == curr_item_value) %>% filter(replicate_id == 0) %>% filter((eligibility == 1) & (eligibility_lag1 == 1)) %>% filter(is_low_effort == 1) %>% nrow(.)
+  pool_manual <- pool.scalar(Q = mi_est[, idx_item_value], 
+                             U = mi_var[, idx_item_value], 
+                             n = num_participant_decision_points, 
                              k = 1)
   
-  pool_stats <- calculate_pool_statistics2(degrees_of_freedom = num_participants - 1, pool_manual = pool_manual)
-  pool_stats$n <- num_participants
-  pool_stats$Qbar <- mean(mi_est[, idx_decision_point])
+  pool_stats <- calculate_pool_statistics2(degrees_of_freedom = num_participant_decision_points - 1, pool_manual = pool_manual)
+  pool_stats$n <- num_participant_decision_points
+  pool_stats$Qbar <- mean(mi_est[, idx_item_value])
   pool_stats$pooled_stderr <- sqrt(pool_stats$total_var)
   pool_stats$conf_int_lb <- pool_stats$Qbar - qnorm(p = use_alpha, lower.tail = FALSE) * pool_stats$pooled_stderr
   pool_stats$conf_int_ub <- pool_stats$Qbar + qnorm(p = use_alpha, lower.tail = FALSE) * pool_stats$pooled_stderr
@@ -144,8 +145,8 @@ for(idx_decision_point in 1:5){
 
 dat_all_pool_stats <- bind_rows(list_all_pool_stats)
 dat_all_pool_stats <- dat_all_pool_stats %>% 
-  mutate(decision_point = 0:4) %>% 
-  select(decision_point, n, Qbar, pooled_stderr, conf_int_lb, conf_int_ub, everything())
+  mutate(self_efficacy_cig_lag1 = 0:4) %>% 
+  select(self_efficacy_cig_lag1, n, Qbar, pooled_stderr, conf_int_lb, conf_int_ub, everything())
 
 dat_ppc <- dat_ppc %>% round(., digits = 3)
 dat_all_pool_stats <- dat_all_pool_stats %>% round(., digits = 3)

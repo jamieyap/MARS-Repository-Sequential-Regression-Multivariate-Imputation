@@ -113,15 +113,12 @@ merged_est_high_effort_prompt_by_dp <- left_join(x = cc_est_high_effort_prompt_b
 merged_est_low_effort_prompt_by_dp <- left_join(x = cc_est_low_effort_prompt_by_dp, y = dat_all_pool_stats_low_effort_prompt_by_dp, by = join_by(decision_point == decision_point))
 
 merged_est_no_prompt_by_dp <- merged_est_no_prompt_by_dp %>%
-  select(decision_point, n_total, n_observed_among_total, n, est, Qbar) %>%
   mutate(discrepancy = est - Qbar)
 
 merged_est_high_effort_prompt_by_dp <- merged_est_high_effort_prompt_by_dp %>%
-  select(decision_point, n_total, n_observed_among_total, n, est, Qbar) %>%
   mutate(discrepancy = est - Qbar)
 
 merged_est_low_effort_prompt_by_dp <- merged_est_low_effort_prompt_by_dp %>%
-  select(decision_point, n_total, n_observed_among_total, n, est, Qbar) %>%
   mutate(discrepancy = est - Qbar)
 
 all_results <- data.frame(decision_point = c(7:54, 7:54, 7:54),

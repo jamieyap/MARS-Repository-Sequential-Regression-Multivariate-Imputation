@@ -25,10 +25,6 @@ dat_primary_aim <- dat_primary_aim %>%
     .default = NULL
   ))
 
-dat_primary_aim <- dat_primary_aim %>%
-  select(mars_id, participant_id, cluster_id, decision_point,
-         eligibility, eligibility_lag1, any_recent_eligible_dp, which_pattern, everything())
-
 ###############################################################################
 # Create descriptive statistics marginal over decision point
 ###############################################################################
@@ -43,8 +39,7 @@ dat_stats <- dat_primary_aim %>%
     which_pattern == 4 ~ "Participant-decision points not eligible at t",
     .default = NULL
   )) %>%
-  mutate(which_pattern_factor = as_factor(which_pattern_factor)) %>%
-  select(which_pattern_factor, which_pattern, count, n_observed)
+  mutate(which_pattern_factor = as_factor(which_pattern_factor))
 
 write.csv(dat_stats, file = file.path("plot-cc-and-mi-together", "eligibility_pattern_descriptive_stats_day0_to_day9.csv"))
 
@@ -60,8 +55,7 @@ dat_stats <- dat_primary_aim %>%
     which_pattern == 4 ~ "Participant-decision points not eligible at t",
     .default = NULL
   )) %>%
-  mutate(which_pattern_factor = as_factor(which_pattern_factor)) %>%
-  select(which_pattern_factor, which_pattern, count, n_observed)
+  mutate(which_pattern_factor = as_factor(which_pattern_factor))
 
 write.csv(dat_stats, file = file.path("plot-cc-and-mi-together", "eligibility_pattern_descriptive_stats_day1_to_day8.csv"))
 
@@ -106,7 +100,7 @@ dat_stats_by_dp_subset <- dat_stats_by_dp %>% filter(which_pattern !=4)
 
 ggplot(dat_stats_by_dp_subset, aes(x = decision_point, y = count, group = which_pattern_code_factor)) +
   scale_y_continuous(name = "No. of participants", limits = c(-5,100), breaks = seq(0,1000,20)) +
-  scale_x_continuous(name = "Decision Point (Block) Number in the Study", limits = c(0,60), breaks = seq(0,60,20)) + 
+  scale_x_continuous(name = "Decision Point Number in the Study", limits = c(0,60), breaks = seq(0,60,20)) + 
   geom_line(linewidth = 1.5, alpha = 1, color = "firebrick") +
   geom_point(shape = 24, colour = "firebrick", fill = "pink", size = 3, stroke = 3) +
   theme(axis.text = element_text(size = 18), legend.position = "none", axis.title.x = element_text(size = 18), axis.title.y = element_text(size = 18)) +
@@ -129,7 +123,7 @@ ggplot(dat_stats_by_dp_collapsed, aes(x = decision_point, y = count_eligible)) +
   geom_line(aes(x = decision_point, y = count_ineligible), color = "darkgreen", linewidth = 1.5, alpha = 1) + 
   geom_point(aes(x = decision_point, y = count_ineligible), color = "darkgreen", shape = 22, fill = "green", size = 3, stroke = 3, alpha = 1) +
   scale_y_continuous(name = "No. of participants", limits = c(-5,100), breaks = seq(0,1000,20)) +
-  scale_x_continuous(name = "Decision Point (Block) Number in the Study", limits = c(0,60), breaks = seq(0,60,20)) + 
+  scale_x_continuous(name = "Decision Point Number in the Study", limits = c(0,60), breaks = seq(0,60,20)) + 
   geom_line(linewidth = 1.5, alpha = 1, color = "firebrick") +
   geom_point(shape = 24, colour = "firebrick", fill = "pink", size = 3, stroke = 3) +
   geom_line(aes(x = decision_point, y = n_observed_eligible), color = "black", linewidth = 1.5, alpha = 1) + 

@@ -170,7 +170,7 @@ dat_for_variable_selection <- dat_stratum %>% filter(replicate_id == 0) %>% sele
 fit <- tryCatch(expr = {glm(as.formula(paste(this_outcome, "~ .", sep = "")), 
                             family = gaussian, 
                             data = dat_for_variable_selection)}, 
-                warning = function(w){"Hey, a warning"})
+                warning = function(w){paste("Hey, a warning: ", conditionMessage(w), sep = "")}, error = function(e){paste("Hey, an error: ", conditionMessage(e), sep = "")})
 check_convergence_result <- (class(fit)[[1]] == "glm")  # fit will be of class "character" if there was a convergence issue
 
 if(check_convergence_result == TRUE){
@@ -183,7 +183,7 @@ if(check_convergence_result == TRUE){
                          upper = fit$formula),
             trace = FALSE, 
             k = use_penalty)  # To use AIC, set k=2. To use BIC, set k = log(n)
-  }, warning = function(w){"Hey, a warning"})
+  }, warning = function(w){paste("Hey, a warning: ", conditionMessage(w), sep = "")}, error = function(e){paste("Hey, an error: ", conditionMessage(e), sep = "")})
   
   stepwise_convergence <- (class(fit_step)[[1]] == "glm")
   
@@ -311,14 +311,11 @@ check_convergence_result <- TRUE
 
 consider_these_vars <- my_list[[which(names(my_list) == this_outcome)]]
 dat_for_variable_selection <- dat_stratum %>% filter(replicate_id == 0) %>% select(all_of(consider_these_vars))
-# Include all main effects, the two-way interaction between is_high_effort and the rest of the main effect terms, 
-# the two-way interaction between is_low_effort and the rest of the main effect terms,
-# but do not include the two-way interaction between is_high_effort and is_low_effort
-# Note that this formula does not include two-way interactions that do not involve is_high_effort or is_low_effort
-fit <- tryCatch(expr = {glm(as.formula(paste(this_outcome, "~ . + is_high_effort*(.) + is_low_effort*(.) - is_high_effort:is_low_effort", sep = "")), 
+# Include all main effect terms only
+fit <- tryCatch(expr = {glm(as.formula(paste(this_outcome, "~ .", sep = "")), 
                             family = gaussian, 
                             data = dat_for_variable_selection)}, 
-                warning = function(w){"Hey, a warning"})
+                warning = function(w){paste("Hey, a warning: ", conditionMessage(w), sep = "")}, error = function(e){paste("Hey, an error: ", conditionMessage(e), sep = "")})
 check_convergence_result <- (class(fit)[[1]] == "glm")  # fit will be of class "character" if there was a convergence issue
 
 if(check_convergence_result == TRUE){
@@ -331,7 +328,7 @@ if(check_convergence_result == TRUE){
                          upper = fit$formula),
             trace = FALSE, 
             k = use_penalty)  # To use AIC, set k=2. To use BIC, set k = log(n)
-  }, warning = function(w){"Hey, a warning"})
+  }, warning = function(w){paste("Hey, a warning: ", conditionMessage(w), sep = "")}, error = function(e){paste("Hey, an error: ", conditionMessage(e), sep = "")})
   
   stepwise_convergence <- (class(fit_step)[[1]] == "glm")
   
@@ -459,14 +456,11 @@ check_convergence_result <- TRUE
 
 consider_these_vars <- my_list[[which(names(my_list) == this_outcome)]]
 dat_for_variable_selection <- dat_stratum %>% filter(replicate_id == 0) %>% select(all_of(consider_these_vars))
-# Include all main effects, the two-way interaction between is_high_effort and the rest of the main effect terms, 
-# the two-way interaction between is_low_effort and the rest of the main effect terms,
-# but do not include the two-way interaction between is_high_effort and is_low_effort
-# Note that this formula does not include two-way interactions that do not involve is_high_effort or is_low_effort
-fit <- tryCatch(expr = {glm(as.formula(paste(this_outcome, "~ . + is_high_effort*(.) + is_low_effort*(.) - is_high_effort:is_low_effort", sep = "")), 
+# Include all main effect terms only
+fit <- tryCatch(expr = {glm(as.formula(paste(this_outcome, "~ .", sep = "")), 
                             family = gaussian, 
                             data = dat_for_variable_selection)}, 
-                warning = function(w){"Hey, a warning"})
+                warning = function(w){paste("Hey, a warning: ", conditionMessage(w), sep = "")}, error = function(e){paste("Hey, an error: ", conditionMessage(e), sep = "")})
 check_convergence_result <- (class(fit)[[1]] == "glm")  # fit will be of class "character" if there was a convergence issue
 
 if(check_convergence_result == TRUE){
@@ -479,7 +473,7 @@ if(check_convergence_result == TRUE){
                          upper = fit$formula),
             trace = FALSE, 
             k = use_penalty)  # To use AIC, set k=2. To use BIC, set k = log(n)
-  }, warning = function(w){"Hey, a warning"})
+  }, warning = function(w){paste("Hey, a warning: ", conditionMessage(w), sep = "")}, error = function(e){paste("Hey, an error: ", conditionMessage(e), sep = "")})
   
   stepwise_convergence <- (class(fit_step)[[1]] == "glm")
   

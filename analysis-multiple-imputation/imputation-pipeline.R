@@ -26,6 +26,7 @@ source(file.path("analysis-multiple-imputation", "generate-multiply-imputed-data
 
 source(file.path("analysis-multiple-imputation", "generate-multiply-imputed-datasets", "check-convergence-of-initial-model.R"))
 source(file.path("analysis-multiple-imputation", "generate-multiply-imputed-datasets", "check-convergence-of-stepwise-model.R"))
+source(file.path("analysis-multiple-imputation", "generate-multiply-imputed-datasets", "check-final-model.R"))
 
 ###############################################################################
 # Data preparation
@@ -123,13 +124,6 @@ source(file.path("analysis-multiple-imputation", "pool-and-ppc", "estimate-means
 source(file.path("analysis-multiple-imputation", "pool-and-ppc", "ppc-means-by-prior-self-efficacy.R"))
 
 ###############################################################################
-# Plot descriptive statistics
-###############################################################################
-source(file = file.path("analysis-multiple-imputation", "mi-set-up.R"))
-
-source(file.path("plot-cc-and-mi-together", "descriptive-stats-eligibility-pattern.R"))
-
-###############################################################################
 # Plot CC and MI results together
 ###############################################################################
 source(file = file.path("analysis-multiple-imputation", "mi-set-up.R"))
@@ -138,4 +132,12 @@ source(file.path("plot-cc-and-mi-together", "plot-primary.R"))
 source(file.path("plot-cc-and-mi-together", "plot-secondary.R"))
 source(file.path("plot-cc-and-mi-together", "plot-time-specific-means-by-dp.R"))
 source(file.path("plot-cc-and-mi-together", "plot-means-by-prior-self-efficacy.R"))
+
+###############################################################################
+# Plot descriptive statistics
+###############################################################################
+source(file = file.path("analysis-multiple-imputation", "mi-set-up.R"))
+
+source(file.path("plot-cc-and-mi-together", "descriptive-stats-eligibility-pattern.R"))
+
 
