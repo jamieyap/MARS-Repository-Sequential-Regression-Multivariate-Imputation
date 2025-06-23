@@ -20,14 +20,14 @@ all_results <- rbind(cc_results, mi_results)
 
 ggplot(all_results, aes(x = where_from, y = est, color = where_from)) +
   geom_point(size = 10) +
-  geom_errorbar(aes(ymin = lb, ymax = ub), width = 0.4, linewidth = 2) +
+  geom_errorbar(aes(ymin = lb, ymax = ub), width = 0.4, linewidth = 1) +
   scale_y_continuous(name = "Estimated Difference in Means", limits = c(-0.5,0.5), breaks = seq(-0.5,0.5,0.10)) +
   scale_x_discrete(name = "") + 
   theme(axis.text = element_text(size = 18), title = element_text(size = 20), legend.position = "none") +
   geom_text(aes(label=round(est,3)), hjust = -0.4, size=8) +
   scale_color_manual(values=group_colors) +
   ggtitle("Prompt vs. No Prompt") +
-  geom_hline(yintercept = 0, linetype = "dashed", linewidth = 2, colour = "red")
+  geom_hline(yintercept = 0, linetype = "dashed", linewidth = 1, colour = "red")
 
 ggsave(filename = file.path("plot-cc-and-mi-together", "primary_marginal_CI90.png"), width = 6, height = 8, units = "in", dpi = 1000)
 

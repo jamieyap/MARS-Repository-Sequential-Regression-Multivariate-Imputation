@@ -86,8 +86,8 @@ ggplot(ppc_results, aes(x = decision_point, y = ppc_est)) +
   facet_grid(~ what) +
   theme(strip.text.x = element_text(size = 18, colour = "black", angle = 0)) +
   theme(strip.text.y = element_text(size = 18, colour = "black", angle = 0)) +
-  geom_hline(yintercept = 0.95, linetype = "dashed", linewidth = 2, colour = "red") +
-  geom_hline(yintercept = 0.05, linetype = "dashed", linewidth = 2, colour = "red")
+  geom_hline(yintercept = 0.95, linetype = "dashed", linewidth = 1, colour = "red") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", linewidth = 1, colour = "red")
 
 ggsave(filename = file.path("plot-cc-and-mi-together", "ppc_time_specific_means.png"), width = 20, height = 6, units = "in", dpi = 1000)
 
@@ -99,7 +99,7 @@ ggplot(ppc_results, aes(x = decision_point, y = fmi)) +
   facet_grid(~ what) +
   theme(strip.text.x = element_text(size = 18, colour = "black", angle = 0)) +
   theme(strip.text.y = element_text(size = 18, colour = "black", angle = 0)) +
-  geom_hline(yintercept = 0.95, linetype = "dashed", linewidth = 2, colour = "red")
+  geom_hline(yintercept = 0.95, linetype = "dashed", linewidth = 1, colour = "red")
 
 ggsave(filename = file.path("plot-cc-and-mi-together", "fmi_time_specific_means.png"), width = 20, height = 6, units = "in", dpi = 1000)
 
@@ -134,7 +134,7 @@ ggplot(all_results, aes(x = decision_point, y = discrepancy)) +
   scale_x_continuous(name = "Decision Point", limits = c(6,54), breaks = seq(6,54,6)) + 
   theme(axis.text = element_text(size = 18), title = element_text(size = 20), legend.position = "none") +
   geom_line(linewidth = 1) + geom_point(size = 3) +
-  geom_hline(yintercept = 0, linetype = "dashed", linewidth = 2, colour = "red") +
+  geom_hline(yintercept = 0, linetype = "dashed", linewidth = 1, colour = "red") +
   facet_grid(~ what) +
   theme(strip.text.x = element_text(size = 18, colour = "black", angle = 0)) +
   theme(strip.text.y = element_text(size = 18, colour = "black", angle = 0))
