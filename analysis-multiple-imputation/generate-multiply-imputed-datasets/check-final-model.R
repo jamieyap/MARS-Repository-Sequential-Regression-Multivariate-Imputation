@@ -193,7 +193,7 @@ for(mi_dataset_num in 1:M){
                                                       mi_dataset_num, 
                                                       paste("imputation_model_stratum", st_num, "_dp", current_dp_value, ".rds", sep = "")))
     
-    this_row <- which(dat_logged_imputation_model[["decision_point"]] == current_dp_value)
+    this_row <- which(dat_logged_imputation_model[["dp"]] == current_dp_value)
     dat_logged_imputation_model[this_row, paste("m", mi_dataset_num, sep = "")] <- do.call(paste, as.list(format(list_logged_imputation_model[[this_outcome]][[1]])))
   }
 }
@@ -215,7 +215,7 @@ for(mi_dataset_num in 1:M){
                                                       mi_dataset_num, 
                                                       paste("imputation_model_stratum", st_num, "_dp", current_dp_value, ".rds", sep = "")))
     
-    this_row <- which(dat_logged_imputation_model[["decision_point"]] == current_dp_value)
+    this_row <- which(dat_logged_imputation_model[["dp"]] == current_dp_value)
     dat_logged_imputation_model[this_row, paste("m", mi_dataset_num, sep = "")] <- do.call(paste, as.list(format(list_logged_imputation_model[[this_outcome]][[1]])))
   }
 }
@@ -237,7 +237,7 @@ for(mi_dataset_num in 1:M){
                                                       mi_dataset_num, 
                                                       paste("imputation_model_stratum", st_num, "_dp", current_dp_value, ".rds", sep = "")))
     
-    this_row <- which(dat_logged_imputation_model[["decision_point"]] == current_dp_value)
+    this_row <- which(dat_logged_imputation_model[["dp"]] == current_dp_value)
     dat_logged_imputation_model[this_row, paste("m", mi_dataset_num, sep = "")] <- do.call(paste, as.list(format(list_logged_imputation_model[[this_outcome]][[1]])))
   }
 }
