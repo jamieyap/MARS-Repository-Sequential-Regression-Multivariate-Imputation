@@ -182,7 +182,7 @@ my_list <- list("cigarette_counts" = NULL,
 # cigarette_counts
 ###############################################################################
 this_outcome <- "cigarette_counts"
-dat_logged_imputation_model <- data.frame(decision_point = 2:max_dp)
+dat_logged_imputation_model <- data.frame(dp = 2:max_dp)
 
 for(mi_dataset_num in 1:M){
   dat_logged_imputation_model[[paste("m", mi_dataset_num, sep = "")]] <- NULL
@@ -204,7 +204,7 @@ my_list[[this_outcome]] <- dat_logged_imputation_model
 # motivation_cig
 ###############################################################################
 this_outcome <- "motivation_cig"
-dat_logged_imputation_model <- data.frame(decision_point = 2:max_dp)
+dat_logged_imputation_model <- data.frame(dp = 2:max_dp)
 
 for(mi_dataset_num in 1:M){
   dat_logged_imputation_model[[paste("m", mi_dataset_num, sep = "")]] <- NULL
@@ -226,7 +226,7 @@ my_list[[this_outcome]] <- dat_logged_imputation_model
 # self_efficacy_cig
 ###############################################################################
 this_outcome <- "self_efficacy_cig"
-dat_logged_imputation_model <- data.frame(decision_point = 2:max_dp)
+dat_logged_imputation_model <- data.frame(dp = 2:max_dp)
 
 for(mi_dataset_num in 1:M){
   dat_logged_imputation_model[[paste("m", mi_dataset_num, sep = "")]] <- NULL
