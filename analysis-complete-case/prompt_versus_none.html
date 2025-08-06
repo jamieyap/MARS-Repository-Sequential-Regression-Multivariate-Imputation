@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2025-01-31" />
+<meta name="date" content="2025-08-04" />
 
 <title>Prompt versus None</title>
 
@@ -350,7 +350,7 @@ display: none;
 
 
 <h1 class="title toc-ignore">Prompt versus None</h1>
-<h4 class="date">January 31, 2025</h4>
+<h4 class="date">August 04, 2025</h4>
 
 </div>
 
@@ -362,6 +362,10 @@ margin-left: auto;
 margin-right: auto;
 }
 </style>
+<pre><code>## # A tibble: 1 × 2
+##   n_decision_points n_with_miss
+##               &lt;int&gt;       &lt;int&gt;
+## 1              3638        1900</code></pre>
 <pre><code>## $call
 ## wcls(data = dat_for_analysis, id = &quot;participant_id&quot;, outcome = &quot;self_efficacy_cig&quot;, 
 ##     treatment = &quot;coinflip&quot;, rand_prob = 0.5, moderator_formula = ~1, 
@@ -429,6 +433,60 @@ margin-right: auto;
 ## (Intercept)                        0.92665287  0.670137591 1.18316815 0.12917466  51.461149   1  93 1.732968e-10
 ## days_between_v1_and_coinflip_local 0.01532505 -0.001651624 0.03230173 0.00854903   3.213442   1  93 7.628709e-02
 ## self_efficacy_cig_lag1             0.65924930  0.576152837 0.74234576 0.04184529 248.202475   1  93 0.000000e+00</code></pre>
+<pre><code>## $call
+## wcls(data = dat_for_analysis, id = &quot;participant_id&quot;, outcome = &quot;self_efficacy_cig&quot;, 
+##     treatment = &quot;coinflip&quot;, rand_prob = 0.5, moderator_formula = ~any_response_2qs, 
+##     control_formula = ~days_between_v1_and_coinflip_local + self_efficacy_cig_lag1 + 
+##         any_response_2qs, availability = &quot;overall_elig&quot;)
+## 
+## $causal_excursion_effect
+##                    Estimate     95% LCL      95% UCL     StdErr     Wald df1 df2    p-value
+## (Intercept)       0.1538249 -0.01245754  0.320107350 0.08372367 3.375645   1  92 0.06939487
+## any_response_2qs -0.1831313 -0.36220914 -0.004053412 0.09016620 4.125128   1  92 0.04513655
+## 
+## $control_variables
+##                                       Estimate      95% LCL    95% UCL      StdErr        Wald df1 df2      p-value
+## (Intercept)                         0.94717469  0.675607605 1.21874177 0.136734784  47.9846298   1  92 5.720630e-10
+## days_between_v1_and_coinflip_local  0.01538695 -0.001485051 0.03225894 0.008495098   3.2807122   1  92 7.336186e-02
+## self_efficacy_cig_lag1              0.65946868  0.576273981 0.74266337 0.041888761 247.8525068   1  92 0.000000e+00
+## any_response_2qs                   -0.02734786 -0.138868138 0.08417241 0.056150769   0.2372113   1  92 6.273860e-01</code></pre>
+<pre><code>## $call
+## wcls(data = dat_for_analysis, id = &quot;participant_id&quot;, outcome = &quot;self_efficacy_cig&quot;, 
+##     treatment = &quot;coinflip&quot;, rand_prob = 0.5, moderator_formula = ~self_efficacy_cig_lag1 + 
+##         any_response_2qs + I(self_efficacy_cig_lag1 * any_response_2qs), 
+##     control_formula = ~days_between_v1_and_coinflip_local + self_efficacy_cig_lag1 + 
+##         any_response_2qs + I(self_efficacy_cig_lag1 * any_response_2qs), 
+##     availability = &quot;overall_elig&quot;)
+## 
+## $causal_excursion_effect
+##                                                Estimate    95% LCL     95% UCL     StdErr     Wald df1 df2    p-value
+## (Intercept)                                   0.7157673  0.1415939  1.28994075 0.28896808 6.135416   1  89 0.01513980
+## self_efficacy_cig_lag1                       -0.1974607 -0.3727364 -0.02218499 0.08821218 5.010768   1  89 0.02768448
+## any_response_2qs                             -0.7993434 -1.4448079 -0.15387890 0.32484721 6.054921   1  89 0.01579810
+## I(self_efficacy_cig_lag1 * any_response_2qs)  0.2157398  0.0174298  0.41404985 0.09980481 4.672590   1  89 0.03333170
+## 
+## $control_variables
+##                                                 Estimate     95% LCL    95% UCL      StdErr      Wald df1 df2      p-value
+## (Intercept)                                   1.16261281  0.76305585 1.56216977 0.201087693 33.427140   1  89 1.079706e-07
+## days_between_v1_and_coinflip_local            0.01353033 -0.00327264 0.03033329 0.008456541  2.559948   1  89 1.131463e-01
+## self_efficacy_cig_lag1                        0.58601742  0.46485242 0.70718242 0.060979516 92.353448   1  89 1.998401e-15
+## any_response_2qs                             -0.32117655 -0.73697974 0.09462664 0.209264042  2.355583   1  89 1.283826e-01
+## I(self_efficacy_cig_lag1 * any_response_2qs)  0.10302986 -0.02232401 0.22838374 0.063087680  2.667087   1  89 1.059764e-01</code></pre>
+<pre><code>##                                                                                               Estimate      StdErr          LCL         UCL         LCL90        UCL90      p_value
+## Treatment (Prompt = 1, No Prompt = 0)                                                       0.71576733 0.288968080  0.149400302  1.28213436  0.2404571376  1.191077528 1.325004e-02
+## Treatment x Prior Self-Efficacy                                                            -0.19746072 0.088212183 -0.370353417 -0.02456801 -0.3425568443 -0.052364586 2.519013e-02
+## Treatment x Any Response to Two-Question Survey                                            -0.79934340 0.324847213 -1.436032236 -0.16265456 -1.3336695147 -0.265017280 1.386759e-02
+## Treatment x Prior Self-Efficacy x Any Response to Two-Question Survey                       0.21573982 0.099804806  0.020125995  0.41135365  0.0515755231  0.379904119 3.064767e-02
+## Contrast: Prior Self-Efficacy = 0, Moderated Effect of Any Response to Two-Question Survey -0.79934340 0.324847213 -1.436032236 -0.16265456 -1.3336695147 -0.265017280 1.386759e-02
+## Contrast: Prior Self-Efficacy = 1, Moderated Effect of Any Response to Two-Question Survey -0.58360358 0.230080876 -1.034553806 -0.13265335 -0.9620529391 -0.205154214 1.119620e-02
+## Contrast: Prior Self-Efficacy = 2, Moderated Effect of Any Response to Two-Question Survey -0.36786376 0.142375227 -0.646914073 -0.08881344 -0.6020501641 -0.133677347 9.772910e-03
+## Contrast: Prior Self-Efficacy = 3, Moderated Effect of Any Response to Two-Question Survey -0.15212393 0.086753674 -0.322158012  0.01791014 -0.2948210305 -0.009426839 7.951352e-02
+## Contrast: Prior Self-Efficacy = 4, Moderated Effect of Any Response to Two-Question Survey  0.06361589 0.121258787 -0.174046970  0.30127874 -0.1358370699  0.263068843 5.998411e-01
+## (Intercept)                                                                                 1.16261281 0.201087693  0.768488173  1.55673745  0.8318529879  1.493372630 7.398428e-09
+## days_between_v1_and_coinflip_local                                                          0.01353033 0.008456541 -0.003044189  0.03010484 -0.0003794452  0.027440099 1.096022e-01
+## self_efficacy_cig_lag1                                                                      0.58601742 0.060979516  0.466499768  0.70553508  0.4857150455  0.686319800 7.249957e-22
+## any_response_2qs                                                                           -0.32117655 0.209264042 -0.731326534  0.08897344 -0.6653852669  0.023032169 1.248352e-01
+## I(self_efficacy_cig_lag1 * any_response_2qs)                                                0.10302986 0.063087680 -0.020619717  0.22667944 -0.0007401354  0.206799862 1.024434e-01</code></pre>
 
 
 

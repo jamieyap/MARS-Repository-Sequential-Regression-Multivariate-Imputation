@@ -1,0 +1,5 @@
+"","Estimate","StdErr","LCL","UCL","LCL90","UCL90","p_value"
+"Treatment (Prompt = 1, No Prompt = 0)","-0.08483","0.07736","-0.23646","0.06680","-0.21209","0.04242","0.27284"
+"Treatment x Any Response to Two-Question Survey"," 0.03457","0.08927","-0.14039","0.20954","-0.11226","0.18141","0.69855"
+"Any Response to Two-Question Survey: 0","-0.08483","0.07736","-0.23646","0.06680","-0.21209","0.04242","0.27284"
+"Any Response to Two-Question Survey: 1","-0.05026","0.04779","-0.14393","0.04340","-0.12887","0.02835","0.29293"

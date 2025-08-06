@@ -65,8 +65,7 @@ warning = function(w){"Hey, a warning"})
 if(sum(class(fit1) == "character") > 0){
   results_obj <- "Hey, a warning"
 }else{
-  Lmat <- matrix(c(rep(1,5), 0:4), ncol = 2, byrow = FALSE)
-  results_obj <- summary(fit1, show_control_fit = TRUE, lincomb = Lmat)
+  results_obj <- summary(fit1, show_control_fit = TRUE)
 }
 
 print(results_obj)
@@ -97,8 +96,7 @@ for(idx_replicate in 1:max_replicate_id){
   if(sum(class(fit1) == "character") > 0){
     results_obj <- "Hey, a warning"
   }else{
-    Lmat <- matrix(c(rep(1,5), 0:4), ncol = 2, byrow = FALSE)
-    results_obj <- summary(fit1, show_control_fit = TRUE, lincomb = Lmat)
+    results_obj <- summary(fit1, show_control_fit = TRUE)
   }
   
   saveRDS(fit1, file.path(path_multiple_imputation_pipeline_data, "mi-analysis-results", mi_dataset_num, paste("fit_obj_primary_moderator", "_replicate_", idx_replicate, ".rds", sep = "")))

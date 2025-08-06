@@ -39,7 +39,8 @@ dat_primary_aim <- dat_primary_aim %>%
   group_by(participant_id) %>%
   mutate(eligibility_lag1 = lag(eligibility),
          self_efficacy_cig_lag1 = lag(self_efficacy_cig)) %>%
-  ungroup(.)
+  ungroup(.) %>%
+  mutate(completed_app_usage_preblock = if_else(read_tips_preblock==1 | activ_done_preblock==1, 1, 0))
 
 dat_for_analysis <- dat_primary_aim %>%
   filter((eligibility == 1) & (eligibility_lag1 == 1)) %>%
@@ -53,6 +54,7 @@ dat_for_analysis_cc <- dat_for_analysis_elig %>%
   select(participant_id, decision_point, 
          self_efficacy_cig, 
          days_between_v1_and_coinflip_local, self_efficacy_cig_lag1, 
+         completed_app_usage_preblock, any_response_2qs,
          is_high_effort, is_low_effort) %>% 
   filter(complete.cases(.))
 ```
@@ -251,25 +253,7 @@ fit1 <- geeglm(self_efficacy_cig ~ days_between_v1_and_coinflip_local + self_eff
 
 ```{r}
 Lmat <- matrix(c(0, 0, 0, 1,-1, 0, 0,
-                 0, 0, 0, 0, 0, 1, -1,
-                 # High versus Low: self-efficacy = x
-                 0, 0, 0, 1,-1, 0,  0,
-                 0, 0, 0, 1,-1, 1, -1,
-                 0, 0, 0, 1,-1, 2, -2,
-                 0, 0, 0, 1,-1, 3, -3,
-                 0, 0, 0, 1,-1, 4, -4,
-                 # Low versus None: self-efficacy = x
-                 0, 0, 0, 0, 1, 0, 0,
-                 0, 0, 0, 0, 1, 0, 1,
-                 0, 0, 0, 0, 1, 0, 2,
-                 0, 0, 0, 0, 1, 0, 3,
-                 0, 0, 0, 0, 1, 0, 4,
-                 # High versus None: self-efficacy = x
-                 0, 0, 0, 1, 0, 0, 0,
-                 0, 0, 0, 1, 0, 1, 0,
-                 0, 0, 0, 1, 0, 2, 0,
-                 0, 0, 0, 1, 0, 3, 0,
-                 0, 0, 0, 1, 0, 4, 0), 
+                 0, 0, 0, 0, 0, 1, -1), 
                ncol = 7, byrow = TRUE)
 est_contrast <- Lmat %*% fit1$coefficients
 est_std_err_contrast <- sqrt(diag(Lmat %*% vcov(fit1) %*% t(Lmat)))
@@ -284,22 +268,7 @@ dat_contrast <- data.frame(est = est_contrast,
                            p_value = NA)
 dat_contrast[["Z_statistic"]] <- dat_contrast[["est"]]/dat_contrast[["std_err"]]
 dat_contrast[["p_value"]] <- 2*pnorm(abs(dat_contrast[["Z_statistic"]]), lower.tail = FALSE)
-row.names(dat_contrast) <- c("High Effort Prompt vs Low Effort Prompt", "High Effort Prompt vs Low Effort Prompt x Moderator",
-                             "High vs Low: self-efficacy = 0",
-                             "High vs Low: self-efficacy = 1",
-                             "High vs Low: self-efficacy = 2",
-                             "High vs Low: self-efficacy = 3",
-                             "High vs Low: self-efficacy = 4",
-                             "Low vs None: self-efficacy = 0",
-                             "Low vs None: self-efficacy = 1",
-                             "Low vs None: self-efficacy = 2",
-                             "Low vs None: self-efficacy = 3",
-                             "Low vs None: self-efficacy = 4",
-                             "High vs None: self-efficacy = 0",
-                             "High vs None: self-efficacy = 1",
-                             "High vs None: self-efficacy = 2",
-                             "High vs None: self-efficacy = 3",
-                             "High vs None: self-efficacy = 4")
+row.names(dat_contrast) <- c("High Effort Prompt vs Low Effort Prompt", "High Effort Prompt vs Low Effort Prompt x Moderator")
 
 results_obj <- rbind(dat_results, dat_contrast)
 
@@ -318,4 +287,132 @@ dat_out[["p_value"]] <- 2*pnorm(abs(dat_out[["Estimate"]]/dat_out[["StdErr"]]), 
 dat_out %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("analysis-complete-case", "formatted-output", "secondary_moderator.csv"), row.names = TRUE)
 ```
 
+```{r}
+fit1 <- geeglm(self_efficacy_cig ~ days_between_v1_and_coinflip_local + self_efficacy_cig_lag1 + any_response_2qs + is_high_effort + is_low_effort + I(is_high_effort*any_response_2qs) + I(is_low_effort*any_response_2qs), 
+               family = gaussian, 
+               data = dat_for_analysis_cc, 
+               id = participant_id, 
+               waves = decision_point)
+```
 
+```{r}
+Lmat <- matrix(c(0, 0, 0, 0, 1,-1, 0, 0,
+                 0, 0, 0, 0, 0, 0, 1, -1), 
+               ncol = 8, byrow = TRUE)
+est_contrast <- Lmat %*% fit1$coefficients
+est_std_err_contrast <- sqrt(diag(Lmat %*% vcov(fit1) %*% t(Lmat)))
+
+dat_results <- summary(fit1)[["coefficients"]]
+dat_results[["Wald"]] <- sqrt(dat_results[["Wald"]])
+colnames(dat_results) <- c("est", "std_err", "Z_statistic", "p_value")
+
+dat_contrast <- data.frame(est = est_contrast,
+                           std_err = est_std_err_contrast,
+                           Z_statistic = NA,
+                           p_value = NA)
+dat_contrast[["Z_statistic"]] <- dat_contrast[["est"]]/dat_contrast[["std_err"]]
+dat_contrast[["p_value"]] <- 2*pnorm(abs(dat_contrast[["Z_statistic"]]), lower.tail = FALSE)
+row.names(dat_contrast) <- c("High Effort Prompt vs Low Effort Prompt", "High Effort Prompt vs Low Effort Prompt x Any Response to Two-Question Survey")
+
+results_obj <- rbind(dat_results, dat_contrast)
+
+print(round(results_obj, 3))
+```
+```{r}
+dat_out <- results_obj %>% rename(Estimate = est, StdErr = std_err)
+
+dat_out[["LCL"]] <- dat_out[["Estimate"]] - dat_out[["StdErr"]] * qnorm(0.975)
+dat_out[["UCL"]] <- dat_out[["Estimate"]] + dat_out[["StdErr"]] * qnorm(0.975)
+dat_out[["LCL90"]] <- dat_out[["Estimate"]] - dat_out[["StdErr"]] * qnorm(0.95)
+dat_out[["UCL90"]] <- dat_out[["Estimate"]] + dat_out[["StdErr"]] * qnorm(0.95)
+dat_out[["p_value"]] <- 2*pnorm(abs(dat_out[["Estimate"]]/dat_out[["StdErr"]]), lower.tail = FALSE)
+
+# Format output to 5 decimal places
+dat_out %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("analysis-complete-case", "formatted-output", "secondary_study_day_moderator_any_response_2qs.csv"), row.names = TRUE)
+```
+
+```{r}
+fit1 <- geeglm(self_efficacy_cig ~ days_between_v1_and_coinflip_local + self_efficacy_cig_lag1 + any_response_2qs + I(self_efficacy_cig_lag1 * any_response_2qs) + is_high_effort + is_low_effort + I(is_high_effort * self_efficacy_cig_lag1) + I(is_low_effort * self_efficacy_cig_lag1) + I(is_high_effort * any_response_2qs) + I(is_low_effort * any_response_2qs) + I(is_high_effort * self_efficacy_cig_lag1 * any_response_2qs) + I(is_low_effort * self_efficacy_cig_lag1 * any_response_2qs), 
+               family = gaussian, 
+               data = dat_for_analysis_cc, 
+               id = participant_id, 
+               waves = decision_point)
+```
+
+```{r}
+Lmat <- matrix(c(0, 0, 0, 0, 0, 1,-1, 0, 0, 0, 0, 0, 0, 
+                 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1,
+                 # Contrasts: Moderated effect of 2qs at different values of prior self-efficacy - High versus None.
+                 0, 0, 0, 0, 0, 0,0, 0, 0, 1, 0, 1*0, 0,
+                 0, 0, 0, 0, 0, 0,0, 0, 0, 1, 0, 1*1, 0,
+                 0, 0, 0, 0, 0, 0,0, 0, 0, 1, 0, 1*2, 0,
+                 0, 0, 0, 0, 0, 0,0, 0, 0, 1, 0, 1*3, 0,
+                 0, 0, 0, 0, 0, 0,0, 0, 0, 1, 0, 1*4, 0,
+                 # Contrasts: Moderated effect of 2qs at different values of prior self-efficacy - Low versus None.
+                 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 1, 0, 1*0,
+                 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 1, 0, 1*1,
+                 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 1, 0, 1*2,
+                 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 1, 0, 1*3,
+                 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 1, 0, 1*4,
+                 # Contrasts: Moderated effect of 2qs at different values of prior self-efficacy - High versus Low.
+                 0, 0, 0, 0, 0, 0,0, 0, 0, 1, -1, 1*0, -1*0,
+                 0, 0, 0, 0, 0, 0,0, 0, 0, 1, -1, 1*1, -1*1,
+                 0, 0, 0, 0, 0, 0,0, 0, 0, 1, -1, 1*2, -1*2,
+                 0, 0, 0, 0, 0, 0,0, 0, 0, 1, -1, 1*3, -1*3,
+                 0, 0, 0, 0, 0, 0,0, 0, 0, 1, -1, 1*4, -1*4 
+                 ), 
+               ncol = 13, byrow = TRUE)
+est_contrast <- Lmat %*% fit1$coefficients
+est_std_err_contrast <- sqrt(diag(Lmat %*% vcov(fit1) %*% t(Lmat)))
+
+dat_results <- summary(fit1)[["coefficients"]]
+dat_results[["Wald"]] <- sqrt(dat_results[["Wald"]])
+colnames(dat_results) <- c("est", "std_err", "Z_statistic", "p_value")
+
+dat_contrast <- data.frame(est = est_contrast,
+                           std_err = est_std_err_contrast,
+                           Z_statistic = NA,
+                           p_value = NA)
+dat_contrast[["Z_statistic"]] <- dat_contrast[["est"]]/dat_contrast[["std_err"]]
+dat_contrast[["p_value"]] <- 2*pnorm(abs(dat_contrast[["Z_statistic"]]), lower.tail = FALSE)
+row.names(dat_contrast) <- c("High Effort Prompt vs Low Effort Prompt", 
+                             "High Effort Prompt vs Low Effort Prompt x Prior Self-Efficacy",
+                             "High Effort Prompt vs Low Effort Prompt x Any Response to Two-Question Survey",
+                             "High Effort Prompt vs Low Effort Prompt x Prior Self-Efficacy x Any Response to Two-Question Survey",
+                             # Contrasts: Moderated effect of 2qs at different values of prior self-efficacy - High versus None.
+                             "High Effort Prompt vs. No Prompt: When Prior Self-Efficacy=0, Moderated Effect of Two-Question Survey",
+                             "High Effort Prompt vs. No Prompt: When Prior Self-Efficacy=1, Moderated Effect of Two-Question Survey",
+                             "High Effort Prompt vs. No Prompt: When Prior Self-Efficacy=2, Moderated Effect of Two-Question Survey",
+                             "High Effort Prompt vs. No Prompt: When Prior Self-Efficacy=3, Moderated Effect of Two-Question Survey",
+                             "High Effort Prompt vs. No Prompt: When Prior Self-Efficacy=4, Moderated Effect of Two-Question Survey",
+                             # Contrasts: Moderated effect of 2qs at different values of prior self-efficacy - Low versus None.
+                             "Low Effort Prompt vs. No Prompt: When Prior Self-Efficacy=0, Moderated Effect of Two-Question Survey",
+                             "Low Effort Prompt vs. No Prompt: When Prior Self-Efficacy=1, Moderated Effect of Two-Question Survey",
+                             "Low Effort Prompt vs. No Prompt: When Prior Self-Efficacy=2, Moderated Effect of Two-Question Survey",
+                             "Low Effort Prompt vs. No Prompt: When Prior Self-Efficacy=3, Moderated Effect of Two-Question Survey",
+                             "Low Effort Prompt vs. No Prompt: When Prior Self-Efficacy=4, Moderated Effect of Two-Question Survey",
+                             # Contrasts: Moderated effect of 2qs at different values of prior self-efficacy - High versus Low.
+                             "High Effort Prompt vs. Low Effort Prompt: When Prior Self-Efficacy=0, Moderated Effect of Two-Question Survey",
+                             "High Effort Prompt vs. Low Effort Prompt: When Prior Self-Efficacy=1, Moderated Effect of Two-Question Survey",
+                             "High Effort Prompt vs. Low Effort Prompt: When Prior Self-Efficacy=2, Moderated Effect of Two-Question Survey",
+                             "High Effort Prompt vs. Low Effort Prompt: When Prior Self-Efficacy=3, Moderated Effect of Two-Question Survey",
+                             "High Effort Prompt vs. Low Effort Prompt: When Prior Self-Efficacy=4, Moderated Effect of Two-Question Survey")                   
+
+results_obj <- rbind(dat_results, dat_contrast)
+
+print(round(results_obj, 3))
+```
+```{r}
+dat_out <- results_obj %>% rename(Estimate = est, StdErr = std_err)
+
+dat_out[["LCL"]] <- dat_out[["Estimate"]] - dat_out[["StdErr"]] * qnorm(0.975)
+dat_out[["UCL"]] <- dat_out[["Estimate"]] + dat_out[["StdErr"]] * qnorm(0.975)
+dat_out[["LCL90"]] <- dat_out[["Estimate"]] - dat_out[["StdErr"]] * qnorm(0.95)
+dat_out[["UCL90"]] <- dat_out[["Estimate"]] + dat_out[["StdErr"]] * qnorm(0.95)
+dat_out[["p_value"]] <- 2*pnorm(abs(dat_out[["Estimate"]]/dat_out[["StdErr"]]), lower.tail = FALSE)
+
+# Format output to 5 decimal places
+dat_out %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("analysis-complete-case", "formatted-output", "secondary_study_day_moderator_prior_self_efficacy_and_any_response_2qs.csv"), row.names = TRUE)
+```

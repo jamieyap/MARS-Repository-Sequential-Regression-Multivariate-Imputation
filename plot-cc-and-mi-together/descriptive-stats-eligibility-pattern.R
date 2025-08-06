@@ -87,9 +87,9 @@ dat_stats_by_dp <- dat_stats_by_dp %>%
     .default = NULL
   )) %>%
   mutate(which_pattern_code_factor = case_when(
-    which_pattern == 1 ~ "Stratum 1 only",
+    which_pattern == 1 ~ "Stratum 3 only",
     which_pattern == 2 ~ "Stratum 2 only",
-    which_pattern == 3 ~ "Stratum 3 only",
+    which_pattern == 3 ~ "Stratum 1 only",
     which_pattern == 4 ~ "Stratum 4 only",
     .default = NULL
   )) %>%

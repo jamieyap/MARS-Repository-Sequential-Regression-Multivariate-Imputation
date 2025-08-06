@@ -39,7 +39,8 @@ dat_primary_aim <- dat_primary_aim %>%
   group_by(participant_id) %>%
   mutate(eligibility_lag1 = lag(eligibility),
          self_efficacy_cig_lag1 = lag(self_efficacy_cig)) %>%
-  ungroup(.)
+  ungroup(.) %>%
+  mutate(completed_app_usage_preblock = if_else(read_tips_preblock==1 | activ_done_preblock==1, 1, 0))
 
 dat_primary_aim <- dat_primary_aim %>%
   filter((decision_point >= 7) & (decision_point <= 54))
@@ -56,8 +57,17 @@ dat_for_analysis <- dat_primary_aim %>%
          eligibility,
          eligibility_lag1,
          self_efficacy_cig_lag1,
-         days_between_v1_and_coinflip_local) %>%
+         days_between_v1_and_coinflip_local,
+         completed_app_usage_preblock,
+         any_response_2qs) %>%
   mutate(overall_elig = if_else((eligibility == 1) & (eligibility_lag1 == 1), 1, 0))
+```
+
+```{r}
+dat_for_analysis %>%
+  filter(overall_elig == 1) %>%
+  summarise(n_decision_points = n(),
+            n_with_miss = sum(is.na(self_efficacy_cig) | is.na(self_efficacy_cig_lag1)))
 ```
 
 ```{r}
@@ -68,7 +78,9 @@ my_list <- list(self_efficacy_cig = -1,
                 eligibility = -1,
                 eligibility_lag1 = -1,
                 self_efficacy_cig_lag1 = -1,
-                days_between_v1_and_coinflip_local = -1)
+                days_between_v1_and_coinflip_local = -1,
+                completed_app_usage_preblock = -1,
+                any_response_2qs = -1)
 ```
 
 ```{r}
@@ -208,6 +220,7 @@ fit1 <- wcls(
 
 summary(fit1, show_control_fit = TRUE)
 ```
+
 ```{r}
 Lmat <- matrix(c(rep(1,8), 1:8, (1:8)^2), ncol = 3, byrow = FALSE)
 
@@ -236,6 +249,7 @@ row.names(dat_out) <- c("Treatment (Prompt = 1, No Prompt = 0)", "Treatment x Da
 # Format output to 5 decimal places
 dat_out %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("analysis-complete-case", "formatted-output", "primary_study_day_quadratic.csv"), row.names = TRUE)
 ```
+
 ```{r}
 fit1 <- wcls(
   data = dat_for_analysis,
@@ -253,7 +267,49 @@ summary(fit1, show_control_fit = TRUE)
 
 
 ```{r}
-Lmat <- matrix(c(rep(1,5), 0:4), ncol = 2, byrow = FALSE)
+dat_result_causal <- summary(fit1, show_control_fit = TRUE)[["causal_excursion_effect"]]
+dat_result_control <- summary(fit1, show_control_fit = TRUE)[["control_variables"]]
+
+dat_result <- rbind(dat_result_causal, dat_result_control)
+dat_result <- as.data.frame(dat_result)
+
+dat_result[["LCL"]] <- dat_result[["Estimate"]] - dat_result[["StdErr"]] * qnorm(0.975)
+dat_result[["UCL"]] <- dat_result[["Estimate"]] + dat_result[["StdErr"]] * qnorm(0.975)
+dat_result[["LCL90"]] <- dat_result[["Estimate"]] - dat_result[["StdErr"]] * qnorm(0.95)
+dat_result[["UCL90"]] <- dat_result[["Estimate"]] + dat_result[["StdErr"]] * qnorm(0.95)
+dat_result[["p_value"]] <- 2*pnorm(abs(dat_result[["Estimate"]]/dat_result[["StdErr"]]), lower.tail = FALSE)
+
+dat_out <- data.frame(Estimate = dat_result$Estimate,
+                      StdErr = dat_result$StdErr,
+                      LCL = dat_result$LCL,
+                      UCL = dat_result$UCL,
+                      LCL90 = dat_result$LCL90,
+                      UCL90 = dat_result$UCL90,
+                      p_value = dat_result$p_value)
+
+row.names(dat_out) <- c("Treatment (Prompt = 1, No Prompt = 0)", "Treatment x Prior Self Efficacy", row.names(dat_result_control))
+
+# Format output to 5 decimal places
+dat_out %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("analysis-complete-case", "formatted-output", "primary_moderator.csv"), row.names = TRUE)
+```
+
+```{r}
+fit1 <- wcls(
+  data = dat_for_analysis,
+  id = "participant_id",  
+  outcome = "self_efficacy_cig",
+  treatment = "coinflip",
+  rand_prob = 0.5,
+  moderator_formula = ~ any_response_2qs,  
+  control_formula = ~ days_between_v1_and_coinflip_local + self_efficacy_cig_lag1 + any_response_2qs, 
+  availability = "overall_elig"
+)
+
+summary(fit1, show_control_fit = TRUE)
+```
+
+```{r}
+Lmat <- matrix(c(rep(1,2), 0:1), ncol = 2, byrow = FALSE)
 
 dat_result_causal <- summary(fit1, show_control_fit = TRUE, lincomb = Lmat)[["causal_excursion_effect"]]
 dat_result_control <- summary(fit1, show_control_fit = TRUE, lincomb = Lmat)[["control_variables"]]
@@ -275,8 +331,72 @@ dat_out <- data.frame(Estimate = dat_result$Estimate,
                       UCL90 = dat_result$UCL90,
                       p_value = dat_result$p_value)
 
-row.names(dat_out) <- c("Treatment (Prompt = 1, No Prompt = 0)", "Treatment x Prior Self Efficacy", paste("Treatment Effect when Prior Self Efficacy was ", 0:4, sep = ""), row.names(dat_result_control))
+row.names(dat_out) <- c("Treatment (Prompt = 1, No Prompt = 0)", "Treatment x Any Response to Two-Question Survey", paste("Any Response to Two-Question Survey: ", 0:1, sep = ""), row.names(dat_result_control))
 
 # Format output to 5 decimal places
-dat_out %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("analysis-complete-case", "formatted-output", "primary_moderator.csv"), row.names = TRUE)
+dat_out %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("analysis-complete-case", "formatted-output", "primary_moderator_any_response_2qs.csv"), row.names = TRUE)
 ```
+
+```{r}
+fit1 <- wcls(
+  data = dat_for_analysis,
+  id = "participant_id",  
+  outcome = "self_efficacy_cig",
+  treatment = "coinflip",
+  rand_prob = 0.5,
+  moderator_formula = ~ self_efficacy_cig_lag1 + any_response_2qs + I(self_efficacy_cig_lag1 * any_response_2qs),  
+  control_formula = ~ days_between_v1_and_coinflip_local + self_efficacy_cig_lag1 + any_response_2qs + I(self_efficacy_cig_lag1 * any_response_2qs), 
+  availability = "overall_elig"
+)
+
+summary(fit1, show_control_fit = TRUE)
+```
+
+```{r}
+Lmat <- matrix(c(0,0,1,0*1,
+                 0,0,1,1*1,
+                 0,0,1,2*1,
+                 0,0,1,3*1,
+                 0,0,1,4*1),
+               ncol = 4,
+               byrow = TRUE)
+
+dat_result_causal <- summary(fit1, show_control_fit = TRUE, lincomb = Lmat)[["causal_excursion_effect"]]
+dat_result_control <- summary(fit1, show_control_fit = TRUE, lincomb = Lmat)[["control_variables"]]
+
+dat_result <- rbind(dat_result_causal, dat_result_control)
+dat_result <- as.data.frame(dat_result)
+
+dat_result[["LCL"]] <- dat_result[["Estimate"]] - dat_result[["StdErr"]] * qnorm(0.975)
+dat_result[["UCL"]] <- dat_result[["Estimate"]] + dat_result[["StdErr"]] * qnorm(0.975)
+dat_result[["LCL90"]] <- dat_result[["Estimate"]] - dat_result[["StdErr"]] * qnorm(0.95)
+dat_result[["UCL90"]] <- dat_result[["Estimate"]] + dat_result[["StdErr"]] * qnorm(0.95)
+dat_result[["p_value"]] <- 2*pnorm(abs(dat_result[["Estimate"]]/dat_result[["StdErr"]]), lower.tail = FALSE)
+
+dat_out <- data.frame(Estimate = dat_result$Estimate,
+                      StdErr = dat_result$StdErr,
+                      LCL = dat_result$LCL,
+                      UCL = dat_result$UCL,
+                      LCL90 = dat_result$LCL90,
+                      UCL90 = dat_result$UCL90,
+                      p_value = dat_result$p_value)
+
+row.names(dat_out) <- c("Treatment (Prompt = 1, No Prompt = 0)", 
+                        "Treatment x Prior Self-Efficacy",
+                        "Treatment x Any Response to Two-Question Survey", 
+                        "Treatment x Prior Self-Efficacy x Any Response to Two-Question Survey",
+                        "Contrast: Prior Self-Efficacy = 0, Moderated Effect of Any Response to Two-Question Survey",
+                        "Contrast: Prior Self-Efficacy = 1, Moderated Effect of Any Response to Two-Question Survey",
+                        "Contrast: Prior Self-Efficacy = 2, Moderated Effect of Any Response to Two-Question Survey",
+                        "Contrast: Prior Self-Efficacy = 3, Moderated Effect of Any Response to Two-Question Survey",
+                        "Contrast: Prior Self-Efficacy = 4, Moderated Effect of Any Response to Two-Question Survey",
+                        row.names(dat_result_control))
+
+# Format output to 5 decimal places
+dat_out %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("analysis-complete-case", "formatted-output", "primary_moderator_prior_self_efficacy_and_any_response_2qs.csv"), row.names = TRUE)
+```
+
+```{r}
+dat_out
+```
+

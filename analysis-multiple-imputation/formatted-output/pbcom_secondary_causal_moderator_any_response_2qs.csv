@@ -1,0 +1,7 @@
+"","pbcom_est","pbcom_stderr"
+"is_high_effort","0.660","0.520"
+"is_low_effort","0.380","0.360"
+"I(is_high_effort * any_response_2qs)","0.420","0.720"
+"I(is_low_effort * any_response_2qs)","0.620","0.560"
+"High Effort Prompt vs Low Effort Prompt","0.760","0.680"
+"High Effort Prompt vs Low Effort Prompt x Any Response to Two-Question Survey","0.260","0.660"

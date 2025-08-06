@@ -66,7 +66,7 @@ fit_pooled[["p_value"]] <- 2*pnorm(abs(fit_pooled[["Estimate"]]/fit_pooled[["Std
 
 row.names(fit_pooled) <- c("Treatment (Prompt = 1, No Prompt = 0)", "Treatment x Day", "Treatment x Day Squared", paste("Treatment Effect on Day ", 1:8, sep = ""))
 fit_pooled_causal <- fit_pooled
-print(fit_pooled_causal$causal_excursion_effect)
+print(fit_pooled_causal)
 
 # Control part of the analysis model ------------------------------------------
 results_obj <- readRDS(file = file.path(path_multiple_imputation_pipeline_data, "mi-analysis-results", 1, "results_obj_primary_study_day_quadratic.rds"))

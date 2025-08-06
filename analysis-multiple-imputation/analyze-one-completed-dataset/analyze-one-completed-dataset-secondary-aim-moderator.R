@@ -58,25 +58,7 @@ fit1 <- geeglm(self_efficacy_cig ~ days_between_v1_and_coinflip_local + self_eff
                waves = decision_point)
 
 Lmat <- matrix(c(0, 0, 0, 1,-1, 0, 0,
-                 0, 0, 0, 0, 0, 1, -1,
-                 # High versus Low: self-efficacy = x
-                 0, 0, 0, 1,-1, 0,  0,
-                 0, 0, 0, 1,-1, 1, -1,
-                 0, 0, 0, 1,-1, 2, -2,
-                 0, 0, 0, 1,-1, 3, -3,
-                 0, 0, 0, 1,-1, 4, -4,
-                 # Low versus None: self-efficacy = x
-                 0, 0, 0, 0, 1, 0, 0,
-                 0, 0, 0, 0, 1, 0, 1,
-                 0, 0, 0, 0, 1, 0, 2,
-                 0, 0, 0, 0, 1, 0, 3,
-                 0, 0, 0, 0, 1, 0, 4,
-                 # High versus None: self-efficacy = x
-                 0, 0, 0, 1, 0, 0, 0,
-                 0, 0, 0, 1, 0, 1, 0,
-                 0, 0, 0, 1, 0, 2, 0,
-                 0, 0, 0, 1, 0, 3, 0,
-                 0, 0, 0, 1, 0, 4, 0), 
+                 0, 0, 0, 0, 0, 1, -1), 
                ncol = 7, byrow = TRUE)
 est_contrast <- Lmat %*% fit1$coefficients
 est_std_err_contrast <- sqrt(diag(Lmat %*% vcov(fit1) %*% t(Lmat)))
@@ -91,22 +73,7 @@ dat_contrast <- data.frame(est = est_contrast,
                            p_value = NA)
 dat_contrast[["Z_statistic"]] <- dat_contrast[["est"]]/dat_contrast[["std_err"]]
 dat_contrast[["p_value"]] <- 2*pnorm(abs(dat_contrast[["Z_statistic"]]), lower.tail = FALSE)
-row.names(dat_contrast) <- c("High Effort Prompt vs Low Effort Prompt", "High Effort Prompt vs Low Effort Prompt x Moderator",
-                             "High vs Low: self-efficacy = 0",
-                             "High vs Low: self-efficacy = 1",
-                             "High vs Low: self-efficacy = 2",
-                             "High vs Low: self-efficacy = 3",
-                             "High vs Low: self-efficacy = 4",
-                             "Low vs None: self-efficacy = 0",
-                             "Low vs None: self-efficacy = 1",
-                             "Low vs None: self-efficacy = 2",
-                             "Low vs None: self-efficacy = 3",
-                             "Low vs None: self-efficacy = 4",
-                             "High vs None: self-efficacy = 0",
-                             "High vs None: self-efficacy = 1",
-                             "High vs None: self-efficacy = 2",
-                             "High vs None: self-efficacy = 3",
-                             "High vs None: self-efficacy = 4")
+row.names(dat_contrast) <- c("High Effort Prompt vs Low Effort Prompt", "High Effort Prompt vs Low Effort Prompt x Moderator")
 
 results_obj <- rbind(dat_results, dat_contrast)
 
@@ -131,25 +98,7 @@ for(idx_replicate in 1:max_replicate_id){
                  waves = decision_point)
   
   Lmat <- matrix(c(0, 0, 0, 1,-1, 0, 0,
-                   0, 0, 0, 0, 0, 1, -1,
-                   # High versus Low: self-efficacy = x
-                   0, 0, 0, 1,-1, 0,  0,
-                   0, 0, 0, 1,-1, 1, -1,
-                   0, 0, 0, 1,-1, 2, -2,
-                   0, 0, 0, 1,-1, 3, -3,
-                   0, 0, 0, 1,-1, 4, -4,
-                   # Low versus None: self-efficacy = x
-                   0, 0, 0, 0, 1, 0, 0,
-                   0, 0, 0, 0, 1, 0, 1,
-                   0, 0, 0, 0, 1, 0, 2,
-                   0, 0, 0, 0, 1, 0, 3,
-                   0, 0, 0, 0, 1, 0, 4,
-                   # High versus None: self-efficacy = x
-                   0, 0, 0, 1, 0, 0, 0,
-                   0, 0, 0, 1, 0, 1, 0,
-                   0, 0, 0, 1, 0, 2, 0,
-                   0, 0, 0, 1, 0, 3, 0,
-                   0, 0, 0, 1, 0, 4, 0), 
+                   0, 0, 0, 0, 0, 1, -1), 
                  ncol = 7, byrow = TRUE)
   est_contrast <- Lmat %*% fit1$coefficients
   est_std_err_contrast <- sqrt(diag(Lmat %*% vcov(fit1) %*% t(Lmat)))
@@ -164,22 +113,7 @@ for(idx_replicate in 1:max_replicate_id){
                              p_value = NA)
   dat_contrast[["Z_statistic"]] <- dat_contrast[["est"]]/dat_contrast[["std_err"]]
   dat_contrast[["p_value"]] <- 2*pnorm(abs(dat_contrast[["Z_statistic"]]), lower.tail = FALSE)
-  row.names(dat_contrast) <- c("High Effort Prompt vs Low Effort Prompt", "High Effort Prompt vs Low Effort Prompt x Moderator",
-                               "High vs Low: self-efficacy = 0",
-                               "High vs Low: self-efficacy = 1",
-                               "High vs Low: self-efficacy = 2",
-                               "High vs Low: self-efficacy = 3",
-                               "High vs Low: self-efficacy = 4",
-                               "Low vs None: self-efficacy = 0",
-                               "Low vs None: self-efficacy = 1",
-                               "Low vs None: self-efficacy = 2",
-                               "Low vs None: self-efficacy = 3",
-                               "Low vs None: self-efficacy = 4",
-                               "High vs None: self-efficacy = 0",
-                               "High vs None: self-efficacy = 1",
-                               "High vs None: self-efficacy = 2",
-                               "High vs None: self-efficacy = 3",
-                               "High vs None: self-efficacy = 4")
+  row.names(dat_contrast) <- c("High Effort Prompt vs Low Effort Prompt", "High Effort Prompt vs Low Effort Prompt x Moderator")
   
   results_obj <- rbind(dat_results, dat_contrast)
   

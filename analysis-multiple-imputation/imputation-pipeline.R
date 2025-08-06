@@ -27,6 +27,7 @@ source(file.path("analysis-multiple-imputation", "generate-multiply-imputed-data
 source(file.path("analysis-multiple-imputation", "generate-multiply-imputed-datasets", "check-convergence-of-initial-model.R"))
 source(file.path("analysis-multiple-imputation", "generate-multiply-imputed-datasets", "check-convergence-of-stepwise-model.R"))
 source(file.path("analysis-multiple-imputation", "generate-multiply-imputed-datasets", "check-final-model.R"))
+source(file.path("analysis-multiple-imputation", "generate-multiply-imputed-datasets", "check-largest-model-used.R"))
 
 ###############################################################################
 # Data preparation
@@ -58,6 +59,14 @@ for(.__current_idx in 1:.__total_imputed_datasets){
   source(file.path("analysis-multiple-imputation", "analyze-one-completed-dataset", "analyze-one-completed-dataset-primary-aim-study-day-quadratic.R"))
 }
 
+for(.__current_idx in 1:.__total_imputed_datasets){
+  source(file.path("analysis-multiple-imputation", "analyze-one-completed-dataset", "analyze-one-completed-dataset-primary-aim-moderator-any-response-2qs.R"))
+}
+
+for(.__current_idx in 1:.__total_imputed_datasets){
+  source(file.path("analysis-multiple-imputation", "analyze-one-completed-dataset", "analyze-one-completed-dataset-primary-aim-moderator-prior-self-efficacy-and-any-response-2qs.R"))
+}
+
 ###############################################################################
 # Pooling estimates across imputed datasets and posterior predictive checking
 ###############################################################################
@@ -70,6 +79,10 @@ source(file.path("analysis-multiple-imputation", "pool-and-ppc", "pool-primary-m
 source(file.path("analysis-multiple-imputation", "pool-and-ppc", "pool-primary-study-day-linear.R"))
 
 source(file.path("analysis-multiple-imputation", "pool-and-ppc", "pool-primary-study-day-quadratic.R"))
+
+source(file.path("analysis-multiple-imputation", "pool-and-ppc", "pool-primary-moderator-any-response-2qs.R"))
+
+source(file.path("analysis-multiple-imputation", "pool-and-ppc", "pool-primary-moderator-prior-self-efficacy-and-any-response-2qs.R"))
 
 ###############################################################################
 # Data analysis
@@ -92,6 +105,14 @@ for(.__current_idx in 1:.__total_imputed_datasets){
   source(file.path("analysis-multiple-imputation", "analyze-one-completed-dataset", "analyze-one-completed-dataset-secondary-aim-study-day-quadratic.R"))
 }
 
+for(.__current_idx in 1:.__total_imputed_datasets){
+  source(file.path("analysis-multiple-imputation", "analyze-one-completed-dataset", "analyze-one-completed-dataset-secondary-aim-moderator-any-response-2qs.R"))
+}
+
+for(.__current_idx in 1:.__total_imputed_datasets){
+  source(file.path("analysis-multiple-imputation", "analyze-one-completed-dataset", "analyze-one-completed-dataset-secondary-aim-moderator-prior-self-efficacy-and-any-response-2qs.R"))
+}
+
 ###############################################################################
 # Pooling estimates across imputed datasets and posterior predictive checking
 ###############################################################################
@@ -105,6 +126,10 @@ source(file.path("analysis-multiple-imputation", "pool-and-ppc", "pool-secondary
 
 source(file.path("analysis-multiple-imputation", "pool-and-ppc", "pool-secondary-study-day-quadratic.R"))
 
+source(file.path("analysis-multiple-imputation", "pool-and-ppc", "pool-secondary-moderator-any-response-2qs.R"))
+
+source(file.path("analysis-multiple-imputation", "pool-and-ppc", "pool-secondary-moderator-prior-self-efficacy-and-any-response-2qs.R"))
+
 ###############################################################################
 # Pooling estimates across imputed datasets and posterior predictive checking
 ###############################################################################
@@ -115,15 +140,6 @@ source(file.path("analysis-multiple-imputation", "pool-and-ppc", "estimate-time-
 source(file.path("analysis-multiple-imputation", "pool-and-ppc", "ppc-time-specific-means.R"))
 
 ###############################################################################
-# Pooling estimates across imputed datasets and posterior predictive checking
-###############################################################################
-source(file = file.path("analysis-multiple-imputation", "mi-set-up.R"))
-
-source(file.path("analysis-multiple-imputation", "pool-and-ppc", "estimate-means-by-moderator-level-for-mi-data.R"))
-source(file.path("analysis-multiple-imputation", "pool-and-ppc", "estimate-means-by-moderator-level-for-replicated-data.R"))
-source(file.path("analysis-multiple-imputation", "pool-and-ppc", "ppc-means-by-prior-self-efficacy.R"))
-
-###############################################################################
 # Plot CC and MI results together
 ###############################################################################
 source(file = file.path("analysis-multiple-imputation", "mi-set-up.R"))
@@ -131,7 +147,6 @@ source(file = file.path("analysis-multiple-imputation", "mi-set-up.R"))
 source(file.path("plot-cc-and-mi-together", "plot-primary.R"))
 source(file.path("plot-cc-and-mi-together", "plot-secondary.R"))
 source(file.path("plot-cc-and-mi-together", "plot-time-specific-means-by-dp.R"))
-source(file.path("plot-cc-and-mi-together", "plot-means-by-prior-self-efficacy.R"))
 
 ###############################################################################
 # Plot descriptive statistics

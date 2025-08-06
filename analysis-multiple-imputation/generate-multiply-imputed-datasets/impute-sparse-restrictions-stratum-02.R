@@ -111,7 +111,6 @@ my_list[[this_outcome]] <- c(this_outcome,
                              # Tracked time-varying covariates
                              "any_response_2qs",
                              "Y_nreported_past24hrs",
-                             "emi_resp_indicator_sum_past24hrs",
                              "is_high_effort", "is_low_effort",
                              # EMA measured time-varying covariates
                              "cigarette_counts")
@@ -123,7 +122,6 @@ my_list[[this_outcome]] <- c(this_outcome,
                              # Tracked time-varying covariates
                              "any_response_2qs",
                              "Y_nreported_past24hrs",
-                             "emi_resp_indicator_sum_past24hrs",
                              "is_high_effort", "is_low_effort",
                              # EMA measured time-varying covariates
                              "cigarette_counts",

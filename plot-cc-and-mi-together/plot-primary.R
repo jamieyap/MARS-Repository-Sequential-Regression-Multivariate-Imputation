@@ -11,9 +11,9 @@ library(ggplot2)
 cc_marginal <- read.csv(file = file.path("analysis-complete-case", "formatted-output", "primary_marginal.csv"))
 mi_marginal <- read.csv(file = file.path("analysis-multiple-imputation", "formatted-output", "pooled_primary_causal.csv"))
 
-group_colors <- c(CC = "black", MI = "blue")
+group_colors <- c(AC = "black", MI = "blue")
 
-cc_results <- data.frame(where_from = "CC", est = cc_marginal$Estimate[1], lb = cc_marginal$LCL90[1], ub = cc_marginal$UCL90[1])
+cc_results <- data.frame(where_from = "AC", est = cc_marginal$Estimate[1], lb = cc_marginal$LCL90[1], ub = cc_marginal$UCL90[1])
 mi_results <- data.frame(where_from = "MI", est = mi_marginal$Estimate[1], lb = mi_marginal$LCL90[1], ub = mi_marginal$UCL90[1])
 
 all_results <- rbind(cc_results, mi_results)
@@ -35,15 +35,6 @@ if(file.exists("plot-cc-and-mi-together/Thumbs.db")){
   file.remove("plot-cc-and-mi-together/Thumbs.db")
 }
 
-# cc_linear_day <- read.csv(file = file.path("analysis-complete-case", "formatted-output", "primary_study_day_linear.csv"))
-# cc_quadratic_day <- read.csv(file = file.path("analysis-complete-case", "formatted-output", "primary_study_day_quadratic.csv"))
-# cc_moderator <- read.csv(file = file.path("analysis-complete-case", "formatted-output", "primary_moderator.csv"))
-# 
-# mi_linear_day <- read.csv(file = file.path("analysis-multiple-imputation", "formatted-output", "pooled_primary_causal_study_day_linear.csv"))
-# mi_quadratic_day <- read.csv(file = file.path("analysis-multiple-imputation", "formatted-output", "pooled_primary_causal_study_day_quadratic.csv"))
-# mi_moderator <- read.csv(file = file.path("analysis-multiple-imputation", "formatted-output", "pooled_primary_causal_moderator.csv"))
-# 
-
 ###############################################################################
 # Workflow: Moderator - study day quadratic
 ###############################################################################
@@ -57,10 +48,10 @@ library(ggplot2)
 cc_moderator <- read.csv(file = file.path("analysis-complete-case", "formatted-output", "primary_study_day_quadratic.csv"))
 mi_moderator <- read.csv(file = file.path("analysis-multiple-imputation", "formatted-output", "pooled_primary_causal_study_day_quadratic.csv"))
 
-group_colors <- c(CC = "black", MI = "blue")
-group_colors_fill <- c(CC = "grey50", MI = "skyblue")
+group_colors <- c(AC = "black", MI = "blue")
+group_colors_fill <- c(AC = "grey50", MI = "skyblue")
 
-cc_results <- data.frame(where_from = "CC", 
+cc_results <- data.frame(where_from = "AC", 
                          what = c("Prompt vs. No Prompt"), 
                          est = cc_moderator$Estimate[c(3)], lb = cc_moderator$LCL90[c(3)], ub = cc_moderator$UCL90[c(3)])
 
@@ -83,7 +74,7 @@ ggplot(all_results, aes(x = where_from, y = est, color = where_from)) +
   facet_wrap(~what) +
   theme(strip.text.x = element_text(size = 18, colour = "black", angle = 0))
 
-ggsave(filename = file.path("plot-cc-and-mi-together", "primary_study_day_quadratic_CI90.png"), width = 6, height = 8, units = "in", dpi = 1000)
+ggsave(filename = file.path("plot-cc-and-mi-together", "primary_study_day_quadratic_CI90.png"), width = 20/3, height = 8, units = "in", dpi = 1000)
 
 rm(list = ls())
 
@@ -94,10 +85,10 @@ library(ggplot2)
 cc_moderator <- read.csv(file = file.path("analysis-complete-case", "formatted-output", "primary_study_day_quadratic.csv"))
 mi_moderator <- read.csv(file = file.path("analysis-multiple-imputation", "formatted-output", "pooled_primary_causal_study_day_quadratic.csv"))
 
-group_colors <- c(CC = "black", MI = "blue")
-group_colors_fill <- c(CC = "grey50", MI = "skyblue")
+group_colors <- c(AC = "black", MI = "blue")
+group_colors_fill <- c(AC = "grey50", MI = "skyblue")
 
-cc_results <- data.frame(where_from = "CC", 
+cc_results <- data.frame(where_from = "AC", 
                          response = c(seq(1,8),
                                       seq(1,8),
                                       seq(1,8)),
@@ -114,7 +105,7 @@ mi_results <- data.frame(where_from = "MI",
 all_results <- rbind(cc_results, mi_results)
 
 ggplot(all_results, aes(x = response, y = est, ymin = lb, ymax = ub, color = where_from, fill = where_from)) +
-  scale_y_continuous(name = "Estimated Difference in Means", limits = c(-0.75,0.75), breaks = seq(-0.75,0.75,0.25)) +
+  scale_y_continuous(name = "Treatment Effect (Estimated Difference in Means)", limits = c(-0.75,0.75), breaks = seq(-0.75,0.75,0.25)) +
   scale_x_continuous(name = "Day since start of MRT", limits = c(1,8), breaks = seq(1,8,1)) + 
   theme(axis.text = element_text(size = 18), title = element_text(size = 20), legend.position = "none") +
   scale_fill_manual(values=group_colors_fill) +
@@ -127,7 +118,7 @@ ggplot(all_results, aes(x = response, y = est, ymin = lb, ymax = ub, color = whe
   theme(strip.text.x = element_text(size = 18, colour = "black", angle = 0),
         strip.text.y = element_text(size = 18, colour = "black", angle = 0))
 
-ggsave(filename = file.path("plot-cc-and-mi-together", "primary_study_day_quadratic_contrasts_CI90.png"), width = 8, height = 8, units = "in", dpi = 1000)
+ggsave(filename = file.path("plot-cc-and-mi-together", "primary_study_day_quadratic_contrasts_CI90.png"), width = 20/3, height = 12, units = "in", dpi = 1000)
 
 if(file.exists("plot-cc-and-mi-together/Thumbs.db")){
   file.remove("plot-cc-and-mi-together/Thumbs.db")

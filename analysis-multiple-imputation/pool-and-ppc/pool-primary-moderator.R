@@ -64,7 +64,7 @@ fit_pooled[["LCL90"]] <- fit_pooled[["Estimate"]] - fit_pooled[["StdErr"]] * qno
 fit_pooled[["UCL90"]] <- fit_pooled[["Estimate"]] + fit_pooled[["StdErr"]] * qnorm(0.95)
 fit_pooled[["p_value"]] <- 2*pnorm(abs(fit_pooled[["Estimate"]]/fit_pooled[["StdErr"]]), lower.tail = FALSE)
 
-row.names(fit_pooled) <- c("Treatment (Prompt = 1, No Prompt = 0)", "Treatment x Prior Self Efficacy", paste("Treatment Effect when Prior Self Efficacy was ", 0:4, sep = ""))
+row.names(fit_pooled) <- c("Treatment (Prompt = 1, No Prompt = 0)", "Treatment x Prior Self Efficacy")
 fit_pooled_causal <- fit_pooled
 print(fit_pooled_causal)
 
