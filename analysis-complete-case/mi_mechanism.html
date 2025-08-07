@@ -12,7 +12,7 @@
 
 <meta name="date" content="2025-08-07" />
 
-<title>Prompt versus None</title>
+<title>Multiple Imputation Mechanism</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -349,7 +349,7 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Prompt versus None</h1>
+<h1 class="title toc-ignore">Multiple Imputation Mechanism</h1>
 <h4 class="date">August 07, 2025</h4>
 
 </div>
@@ -366,127 +366,91 @@ margin-right: auto;
 ##   n_decision_points n_with_miss
 ##               &lt;int&gt;       &lt;int&gt;
 ## 1              3638        1900</code></pre>
-<pre><code>## $call
-## wcls(data = dat_for_analysis, id = &quot;participant_id&quot;, outcome = &quot;self_efficacy_cig&quot;, 
-##     treatment = &quot;coinflip&quot;, rand_prob = 0.5, moderator_formula = ~1, 
-##     control_formula = ~days_between_v1_and_coinflip_local + self_efficacy_cig_lag1, 
-##     availability = &quot;overall_elig&quot;)
+<pre><code>## 
+## Call:
+## glm(formula = is_missing ~ completed_app_usage_preblock, family = &quot;poisson&quot;, 
+##     data = dat_for_analysis)
 ## 
-## $causal_excursion_effect
-##               Estimate     95% LCL    95% UCL     StdErr      Wald df1 df2   p-value
-## (Intercept) 0.01548434 -0.06002364 0.09099232 0.03802926 0.1657867   1  94 0.6848095
+## Coefficients:
+##                              Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)                  -0.94855    0.03201 -29.634  &lt; 2e-16 ***
+## completed_app_usage_preblock -0.30242    0.06441  -4.695 2.67e-06 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## $control_variables
-##                                      Estimate      95% LCL    95% UCL      StdErr      Wald df1 df2      p-value
-## (Intercept)                        0.92810350  0.670504830 1.18570218 0.129738420  51.17474   1  94 1.823122e-10
-## days_between_v1_and_coinflip_local 0.01563525 -0.001362989 0.03263349 0.008561087   3.33543   1  94 7.097697e-02
-## self_efficacy_cig_lag1             0.65832585  0.574692898 0.74195880 0.042121363 244.27386   1  94 0.000000e+00</code></pre>
-<pre><code>## $call
-## wcls(data = dat_for_analysis, id = &quot;participant_id&quot;, outcome = &quot;self_efficacy_cig&quot;, 
-##     treatment = &quot;coinflip&quot;, rand_prob = 0.5, moderator_formula = ~days_between_v1_and_coinflip_local, 
-##     control_formula = ~days_between_v1_and_coinflip_local + self_efficacy_cig_lag1, 
-##     availability = &quot;overall_elig&quot;)
+## (Dispersion parameter for poisson family taken to be 1)
 ## 
-## $causal_excursion_effect
-##                                        Estimate     95% LCL   95% UCL     StdErr       Wald df1 df2   p-value
-## (Intercept)                        -0.019070782 -0.20242508 0.1642835 0.09233262 0.04266057   1  93 0.8368172
-## days_between_v1_and_coinflip_local  0.007001517 -0.02567336 0.0396764 0.01645425 0.18106232   1  93 0.6714449
+##     Null deviance: 2675.3  on 3637  degrees of freedom
+## Residual deviance: 2652.2  on 3636  degrees of freedom
+## AIC: 5248.2
 ## 
-## $control_variables
-##                                      Estimate      95% LCL    95% UCL      StdErr       Wald df1 df2      p-value
-## (Intercept)                        0.92769080  0.670378732 1.18500287 0.129575905  51.257568   1  93 1.852654e-10
-## days_between_v1_and_coinflip_local 0.01559961 -0.001408504 0.03260773 0.008564861   3.317317   1  93 7.176871e-02
-## self_efficacy_cig_lag1             0.65851373  0.575044054 0.74198341 0.042033237 245.439245   1  93 0.000000e+00</code></pre>
-<pre><code>## $call
-## wcls(data = dat_for_analysis, id = &quot;participant_id&quot;, outcome = &quot;self_efficacy_cig&quot;, 
-##     treatment = &quot;coinflip&quot;, rand_prob = 0.5, moderator_formula = ~days_between_v1_and_coinflip_local + 
-##         I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local), 
-##     control_formula = ~days_between_v1_and_coinflip_local + I(days_between_v1_and_coinflip_local * 
-##         days_between_v1_and_coinflip_local) + self_efficacy_cig_lag1, 
-##     availability = &quot;overall_elig&quot;)
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre><code>##                                Estimate Std. Error   z value      Pr(&gt;|z|)       LB95       UB95       LB90       UB90
+## (Intercept)                  -0.9485516 0.03200882 -29.63407 5.441060e-193 -1.0112877 -0.8858155 -1.0012014 -0.8959018
+## completed_app_usage_preblock -0.3024241 0.06441489  -4.69494  2.666851e-06 -0.4286749 -0.1761732 -0.4083771 -0.1964710</code></pre>
+<pre><code>##                               estimate      LB95      UB95      LB90      UB90
+## (Intercept)                  0.3873016 0.3637503 0.4123778 0.3674377 0.4082393
+## completed_app_usage_preblock 0.7390246 0.6513716 0.8384728 0.6647281 0.8216252</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = is_missing ~ completed_app_usage_preblock + Nicotine_dep, 
+##     family = &quot;poisson&quot;, data = dat_for_analysis %&gt;% filter(!is.na(Nicotine_dep)))
 ## 
-## $causal_excursion_effect
-##                                                                                Estimate      95% LCL    95% UCL      StdErr     Wald df1 df2   p-value
-## (Intercept)                                                                 0.180267803 -0.209298909 0.56983452 0.196119207 0.844882   1  91 0.3604343
-## days_between_v1_and_coinflip_local                                         -0.093294145 -0.265406680 0.07881839 0.086646453 1.159330   1  91 0.2844507
-## I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local)  0.009958786 -0.006431036 0.02634861 0.008251113 1.456759   1  91 0.2305745
+## Coefficients:
+##                              Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)                  -0.64285    0.06556  -9.806  &lt; 2e-16 ***
+## completed_app_usage_preblock -0.30511    0.06500  -4.694 2.68e-06 ***
+## Nicotine_dep                 -0.11578    0.02268  -5.104 3.33e-07 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## $control_variables
-##                                                                               Estimate     95% LCL      95% UCL      StdErr      Wald df1 df2      p-value
-## (Intercept)                                                                 0.72078129  0.44730163  0.994260952 0.137677610  27.40819   1  91 1.052326e-06
-## days_between_v1_and_coinflip_local                                          0.12644642  0.05937729  0.193515561 0.033764553  14.02462   1  91 3.160326e-04
-## I(days_between_v1_and_coinflip_local * days_between_v1_and_coinflip_local) -0.01102584 -0.01726473 -0.004786962 0.003140834  12.32349   1  91 6.979045e-04
-## self_efficacy_cig_lag1                                                      0.65480175  0.57159607  0.738007430 0.041888157 244.36397   1  91 0.000000e+00</code></pre>
-<pre><code>## $call
-## wcls(data = dat_for_analysis, id = &quot;participant_id&quot;, outcome = &quot;self_efficacy_cig&quot;, 
-##     treatment = &quot;coinflip&quot;, rand_prob = 0.5, moderator_formula = ~self_efficacy_cig_lag1, 
-##     control_formula = ~days_between_v1_and_coinflip_local + self_efficacy_cig_lag1, 
-##     availability = &quot;overall_elig&quot;)
+## (Dispersion parameter for poisson family taken to be 1)
 ## 
-## $causal_excursion_effect
-##                          Estimate    95% LCL    95% UCL     StdErr     Wald df1 df2   p-value
-## (Intercept)             0.1425026 -0.1382511 0.42325626 0.14138052 1.015936   1  93 0.3161004
-## self_efficacy_cig_lag1 -0.0431429 -0.1254339 0.03914805 0.04143966 1.083893   1  93 0.3005274
+##     Null deviance: 2622.0  on 3564  degrees of freedom
+## Residual deviance: 2572.8  on 3562  degrees of freedom
+## AIC: 5128.8
 ## 
-## $control_variables
-##                                      Estimate      95% LCL    95% UCL     StdErr       Wald df1 df2      p-value
-## (Intercept)                        0.92665287  0.670137591 1.18316815 0.12917466  51.461149   1  93 1.732968e-10
-## days_between_v1_and_coinflip_local 0.01532505 -0.001651624 0.03230173 0.00854903   3.213442   1  93 7.628709e-02
-## self_efficacy_cig_lag1             0.65924930  0.576152837 0.74234576 0.04184529 248.202475   1  93 0.000000e+00</code></pre>
-<pre><code>## $call
-## wcls(data = dat_for_analysis, id = &quot;participant_id&quot;, outcome = &quot;self_efficacy_cig&quot;, 
-##     treatment = &quot;coinflip&quot;, rand_prob = 0.5, moderator_formula = ~any_response_2qs, 
-##     control_formula = ~days_between_v1_and_coinflip_local + self_efficacy_cig_lag1 + 
-##         any_response_2qs, availability = &quot;overall_elig&quot;)
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre><code>##                                Estimate Std. Error   z value     Pr(&gt;|z|)       LB95        UB95       LB90        UB90
+## (Intercept)                  -0.6428457 0.06555917 -9.805580 1.065328e-22 -0.7713393 -0.51435208 -0.7506809 -0.53501045
+## completed_app_usage_preblock -0.3051127 0.06500021 -4.694027 2.678789e-06 -0.4325108 -0.17771467 -0.4120286 -0.19819691
+## Nicotine_dep                 -0.1157807 0.02268493 -5.103860 3.327937e-07 -0.1602424 -0.07131907 -0.1530941 -0.07846732</code></pre>
+<pre><code>##                               estimate      LB95      UB95      LB90      UB90
+## (Intercept)                  0.5257940 0.4623934 0.5978879 0.4720450 0.5856632
+## completed_app_usage_preblock 0.7370403 0.6488778 0.8371813 0.6623053 0.8202083
+## Nicotine_dep                 0.8906705 0.8519373 0.9311647 0.8580490 0.9245323</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = is_missing ~ completed_app_usage_preblock + Nicotine_dep + 
+##     I(Nicotine_dep * completed_app_usage_preblock), family = &quot;poisson&quot;, 
+##     data = dat_for_analysis %&gt;% filter(!is.na(Nicotine_dep)))
 ## 
-## $causal_excursion_effect
-##                    Estimate     95% LCL      95% UCL     StdErr     Wald df1 df2    p-value
-## (Intercept)       0.1538249 -0.01245754  0.320107350 0.08372367 3.375645   1  92 0.06939487
-## any_response_2qs -0.1831313 -0.36220914 -0.004053412 0.09016620 4.125128   1  92 0.04513655
+## Coefficients:
+##                                                Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)                                    -0.60042    0.07269  -8.260  &lt; 2e-16 ***
+## completed_app_usage_preblock                   -0.47816    0.14891  -3.211  0.00132 ** 
+## Nicotine_dep                                   -0.13273    0.02616  -5.074  3.9e-07 ***
+## I(Nicotine_dep * completed_app_usage_preblock)  0.06831    0.05233   1.305  0.19178    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## $control_variables
-##                                       Estimate      95% LCL    95% UCL      StdErr        Wald df1 df2      p-value
-## (Intercept)                         0.94717469  0.675607605 1.21874177 0.136734784  47.9846298   1  92 5.720630e-10
-## days_between_v1_and_coinflip_local  0.01538695 -0.001485051 0.03225894 0.008495098   3.2807122   1  92 7.336186e-02
-## self_efficacy_cig_lag1              0.65946868  0.576273981 0.74266337 0.041888761 247.8525068   1  92 0.000000e+00
-## any_response_2qs                   -0.02734786 -0.138868138 0.08417241 0.056150769   0.2372113   1  92 6.273860e-01</code></pre>
-<pre><code>## $call
-## wcls(data = dat_for_analysis, id = &quot;participant_id&quot;, outcome = &quot;self_efficacy_cig&quot;, 
-##     treatment = &quot;coinflip&quot;, rand_prob = 0.5, moderator_formula = ~self_efficacy_cig_lag1 + 
-##         any_response_2qs + I(self_efficacy_cig_lag1 * any_response_2qs), 
-##     control_formula = ~days_between_v1_and_coinflip_local + self_efficacy_cig_lag1 + 
-##         any_response_2qs + I(self_efficacy_cig_lag1 * any_response_2qs), 
-##     availability = &quot;overall_elig&quot;)
+## (Dispersion parameter for poisson family taken to be 1)
 ## 
-## $causal_excursion_effect
-##                                                Estimate    95% LCL     95% UCL     StdErr     Wald df1 df2    p-value
-## (Intercept)                                   0.7157673  0.1415939  1.28994075 0.28896808 6.135416   1  89 0.01513980
-## self_efficacy_cig_lag1                       -0.1974607 -0.3727364 -0.02218499 0.08821218 5.010768   1  89 0.02768448
-## any_response_2qs                             -0.7993434 -1.4448079 -0.15387890 0.32484721 6.054921   1  89 0.01579810
-## I(self_efficacy_cig_lag1 * any_response_2qs)  0.2157398  0.0174298  0.41404985 0.09980481 4.672590   1  89 0.03333170
+##     Null deviance: 2622.0  on 3564  degrees of freedom
+## Residual deviance: 2571.1  on 3561  degrees of freedom
+## AIC: 5129.1
 ## 
-## $control_variables
-##                                                 Estimate     95% LCL    95% UCL      StdErr      Wald df1 df2      p-value
-## (Intercept)                                   1.16261281  0.76305585 1.56216977 0.201087693 33.427140   1  89 1.079706e-07
-## days_between_v1_and_coinflip_local            0.01353033 -0.00327264 0.03033329 0.008456541  2.559948   1  89 1.131463e-01
-## self_efficacy_cig_lag1                        0.58601742  0.46485242 0.70718242 0.060979516 92.353448   1  89 1.998401e-15
-## any_response_2qs                             -0.32117655 -0.73697974 0.09462664 0.209264042  2.355583   1  89 1.283826e-01
-## I(self_efficacy_cig_lag1 * any_response_2qs)  0.10302986 -0.02232401 0.22838374 0.063087680  2.667087   1  89 1.059764e-01</code></pre>
-<pre><code>##                                                                                               Estimate      StdErr          LCL         UCL         LCL90        UCL90      p_value
-## Treatment (Prompt = 1, No Prompt = 0)                                                       0.71576733 0.288968080  0.149400302  1.28213436  0.2404571376  1.191077528 1.325004e-02
-## Treatment x Prior Self-Efficacy                                                            -0.19746072 0.088212183 -0.370353417 -0.02456801 -0.3425568443 -0.052364586 2.519013e-02
-## Treatment x Any Response to Two-Question Survey                                            -0.79934340 0.324847213 -1.436032236 -0.16265456 -1.3336695147 -0.265017280 1.386759e-02
-## Treatment x Prior Self-Efficacy x Any Response to Two-Question Survey                       0.21573982 0.099804806  0.020125995  0.41135365  0.0515755231  0.379904119 3.064767e-02
-## Contrast: Prior Self-Efficacy = 0, Moderated Effect of Any Response to Two-Question Survey -0.79934340 0.324847213 -1.436032236 -0.16265456 -1.3336695147 -0.265017280 1.386759e-02
-## Contrast: Prior Self-Efficacy = 1, Moderated Effect of Any Response to Two-Question Survey -0.58360358 0.230080876 -1.034553806 -0.13265335 -0.9620529391 -0.205154214 1.119620e-02
-## Contrast: Prior Self-Efficacy = 2, Moderated Effect of Any Response to Two-Question Survey -0.36786376 0.142375227 -0.646914073 -0.08881344 -0.6020501641 -0.133677347 9.772910e-03
-## Contrast: Prior Self-Efficacy = 3, Moderated Effect of Any Response to Two-Question Survey -0.15212393 0.086753674 -0.322158012  0.01791014 -0.2948210305 -0.009426839 7.951352e-02
-## Contrast: Prior Self-Efficacy = 4, Moderated Effect of Any Response to Two-Question Survey  0.06361589 0.121258787 -0.174046970  0.30127874 -0.1358370699  0.263068843 5.998411e-01
-## (Intercept)                                                                                 1.16261281 0.201087693  0.768488173  1.55673745  0.8318529879  1.493372630 7.398428e-09
-## days_between_v1_and_coinflip_local                                                          0.01353033 0.008456541 -0.003044189  0.03010484 -0.0003794452  0.027440099 1.096022e-01
-## self_efficacy_cig_lag1                                                                      0.58601742 0.060979516  0.466499768  0.70553508  0.4857150455  0.686319800 7.249957e-22
-## any_response_2qs                                                                           -0.32117655 0.209264042 -0.731326534  0.08897344 -0.6653852669  0.023032169 1.248352e-01
-## I(self_efficacy_cig_lag1 * any_response_2qs)                                                0.10302986 0.063087680 -0.020619717  0.22667944 -0.0007401354  0.206799862 1.024434e-01</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre><code>##                                                   Estimate Std. Error   z value     Pr(&gt;|z|)       LB95        UB95        LB90        UB90
+## (Intercept)                                    -0.60042138 0.07269174 -8.259829 1.458810e-16 -0.7428946 -0.45794818 -0.71998865 -0.48085410
+## completed_app_usage_preblock                   -0.47816151 0.14890561 -3.211172 1.321949e-03 -0.7700112 -0.18631187 -0.72308945 -0.23323357
+## Nicotine_dep                                   -0.13273003 0.02616012 -5.073755 3.900415e-07 -0.1840029 -0.08145714 -0.17575960 -0.08970046
+## I(Nicotine_dep * completed_app_usage_preblock)  0.06831127 0.05233228  1.305337 1.917780e-01 -0.0342581  0.17088065 -0.01776766  0.15439021</code></pre>
+<pre><code>##                                                 estimate      LB95      UB95      LB90      UB90
+## (Intercept)                                    0.5485804 0.4757349 0.6325803 0.4867578 0.6182551
+## completed_app_usage_preblock                   0.6199221 0.4630079 0.8300147 0.4852508 0.7919686
+## Nicotine_dep                                   0.8757015 0.8319334 0.9217722 0.8388196 0.9142050
+## I(Nicotine_dep * completed_app_usage_preblock) 1.0706985 0.9663221 1.1863492 0.9823893 1.1669462</code></pre>
 
 
 

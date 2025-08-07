@@ -1,0 +1,265 @@
+---
+title: "Multiple Imputation Mechanism"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document:
+    toc: TRUE
+    toc_depth: 4
+    number_sections: TRUE
+---
+
+<style type="text/css">
+.main-container {
+  max-width: 1800px !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(tidy = TRUE)
+knitr::opts_chunk$set(fig.pos = 'H')
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE)
+options(width = 7000)
+```
+
+```{r}
+source("paths.R")
+library(knitr)
+library(tidyverse)
+```
+
+```{r}
+dat_primary_aim <- readRDS(file = file.path(path_multiple_imputation_pipeline_data, "dat_primary_aim_for_new_pipeline.rds"))
+```
+
+```{r}
+dat_primary_aim <- dat_primary_aim %>%
+  group_by(participant_id) %>%
+  mutate(eligibility_lag1 = lag(eligibility),
+         self_efficacy_cig_lag1 = lag(self_efficacy_cig)) %>%
+  ungroup(.) %>%
+  mutate(completed_app_usage_preblock = if_else(read_tips_preblock==1 | activ_done_preblock==1, 1, 0))
+
+dat_primary_aim <- dat_primary_aim %>%
+  filter((decision_point >= 7) & (decision_point <= 54))
+```
+
+```{r}
+dat_for_analysis <- dat_primary_aim %>%
+  select(participant_id,
+         decision_point,
+         self_efficacy_cig,
+         coinflip,
+         is_high_effort,
+         is_low_effort,
+         eligibility,
+         eligibility_lag1,
+         self_efficacy_cig_lag1,
+         days_between_v1_and_coinflip_local,
+         completed_app_usage_preblock,
+         any_response_2qs,
+         SE_total,
+         baseline_tobacco_history,
+         Nicotine_dep) %>%
+  mutate(overall_elig = if_else((eligibility == 1) & (eligibility_lag1 == 1), 1, 0))
+```
+
+```{r}
+dat_for_analysis %>%
+  filter(overall_elig == 1) %>%
+  summarise(n_decision_points = n(),
+            n_with_miss = sum(is.na(self_efficacy_cig) | is.na(self_efficacy_cig_lag1)))
+```
+
+```{r}
+dat_for_analysis <- dat_for_analysis %>%
+  filter(overall_elig == 1) %>%
+  mutate(is_missing = if_else(is.na(self_efficacy_cig), 1, 0))
+```
+
+```{r}
+fit <- glm(is_missing ~ completed_app_usage_preblock, 
+           data = dat_for_analysis, 
+           family = "poisson")
+
+summary(fit)
+```
+
+```{r}
+dat_results <- summary(fit)[["coefficients"]]
+
+dat_results <- as.data.frame(dat_results)
+
+dat_results[["LB95"]] <- dat_results$Estimate - qnorm(0.975) * dat_results$`Std. Error`
+dat_results[["UB95"]] <- dat_results$Estimate + qnorm(0.975) * dat_results$`Std. Error`
+
+dat_results[["LB90"]] <- dat_results$Estimate - qnorm(0.95) * dat_results$`Std. Error`
+dat_results[["UB90"]] <- dat_results$Estimate + qnorm(0.95) * dat_results$`Std. Error`
+
+est_beta <- as.matrix(dat_results$Estimate)
+Lmat <- rbind(c(1,0),
+              c(0,1))
+Vmat <- vcov(fit)
+
+est_logrisk_scale <- Lmat %*% est_beta
+std_err_logrisk_scale <- sqrt(diag(Lmat %*% Vmat %*% t(Lmat)))
+
+LB95_logrisk_scale <- est_logrisk_scale - qnorm(0.975)*std_err_logrisk_scale
+UB95_logrisk_scale <- est_logrisk_scale + qnorm(0.975)*std_err_logrisk_scale
+
+LB90_logrisk_scale <- est_logrisk_scale - qnorm(0.95)*std_err_logrisk_scale
+UB90_logrisk_scale <- est_logrisk_scale + qnorm(0.95)*std_err_logrisk_scale
+
+est_probability_scale <- exp(Lmat %*% est_beta)
+
+LB95_probability_scale <- exp(LB95_logrisk_scale)
+UB95_probability_scale <- exp(UB95_logrisk_scale)
+
+LB90_probability_scale <- exp(LB90_logrisk_scale)
+UB90_probability_scale <- exp(UB90_logrisk_scale)
+
+dat_results_probability_scale <- data.frame(estimate = est_probability_scale,
+                                            # 95% CI
+                                            LB95 = LB95_probability_scale, 
+                                            UB95 = UB95_probability_scale,
+                                            # 90% CI
+                                            LB90 = LB90_probability_scale, 
+                                            UB90 = UB90_probability_scale)
+
+row.names(dat_results_probability_scale) <- row.names(dat_results)
+```
+
+```{r}
+dat_results
+
+dat_results_probability_scale
+
+# Format output to 5 decimal places
+dat_results %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("analysis-complete-case", "formatted-output", "mi_mechanism_completed_app_usage_preblock.csv"), row.names = TRUE)
+```
+
+```{r}
+fit <- glm(is_missing ~  completed_app_usage_preblock + Nicotine_dep, 
+           data = dat_for_analysis %>% filter(!is.na(Nicotine_dep)), 
+           family = "poisson")
+
+summary(fit)
+```
+
+```{r}
+dat_results <- summary(fit)[["coefficients"]]
+
+dat_results <- as.data.frame(dat_results)
+
+dat_results[["LB95"]] <- dat_results$Estimate - qnorm(0.975) * dat_results$`Std. Error`
+dat_results[["UB95"]] <- dat_results$Estimate + qnorm(0.975) * dat_results$`Std. Error`
+
+dat_results[["LB90"]] <- dat_results$Estimate - qnorm(0.95) * dat_results$`Std. Error`
+dat_results[["UB90"]] <- dat_results$Estimate + qnorm(0.95) * dat_results$`Std. Error`
+
+est_beta <- as.matrix(dat_results$Estimate)
+Lmat <- rbind(c(1,0,0),
+              c(0,1,0),
+              c(0,0,1))
+Vmat <- vcov(fit)
+
+est_logrisk_scale <- Lmat %*% est_beta
+std_err_logrisk_scale <- sqrt(diag(Lmat %*% Vmat %*% t(Lmat)))
+
+LB95_logrisk_scale <- est_logrisk_scale - qnorm(0.975)*std_err_logrisk_scale
+UB95_logrisk_scale <- est_logrisk_scale + qnorm(0.975)*std_err_logrisk_scale
+
+LB90_logrisk_scale <- est_logrisk_scale - qnorm(0.95)*std_err_logrisk_scale
+UB90_logrisk_scale <- est_logrisk_scale + qnorm(0.95)*std_err_logrisk_scale
+
+est_probability_scale <- exp(Lmat %*% est_beta)
+
+LB95_probability_scale <- exp(LB95_logrisk_scale)
+UB95_probability_scale <- exp(UB95_logrisk_scale)
+
+LB90_probability_scale <- exp(LB90_logrisk_scale)
+UB90_probability_scale <- exp(UB90_logrisk_scale)
+
+dat_results_probability_scale <- data.frame(estimate = est_probability_scale,
+                                            # 95% CI
+                                            LB95 = LB95_probability_scale, 
+                                            UB95 = UB95_probability_scale,
+                                            # 90% CI
+                                            LB90 = LB90_probability_scale, 
+                                            UB90 = UB90_probability_scale)
+
+row.names(dat_results_probability_scale) <- row.names(dat_results)
+```
+
+```{r}
+dat_results
+
+dat_results_probability_scale
+
+# Format output to 5 decimal places
+dat_results %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("analysis-complete-case", "formatted-output", "mi_mechanism_baseline_smoking.csv"), row.names = TRUE)
+```
+
+```{r}
+fit <- glm(is_missing ~ completed_app_usage_preblock + Nicotine_dep + I(Nicotine_dep * completed_app_usage_preblock), 
+           data = dat_for_analysis %>% filter(!is.na(Nicotine_dep)), 
+           family = "poisson")
+
+summary(fit)
+```
+
+```{r}
+dat_results <- summary(fit)[["coefficients"]]
+
+dat_results <- as.data.frame(dat_results)
+
+dat_results[["LB95"]] <- dat_results$Estimate - qnorm(0.975) * dat_results$`Std. Error`
+dat_results[["UB95"]] <- dat_results$Estimate + qnorm(0.975) * dat_results$`Std. Error`
+
+dat_results[["LB90"]] <- dat_results$Estimate - qnorm(0.95) * dat_results$`Std. Error`
+dat_results[["UB90"]] <- dat_results$Estimate + qnorm(0.95) * dat_results$`Std. Error`
+
+est_beta <- as.matrix(dat_results$Estimate)
+Lmat <- rbind(c(1,0,0,0),
+              c(0,1,0,0),
+              c(0,0,1,0),
+              c(0,0,0,1))
+Vmat <- vcov(fit)
+
+est_logrisk_scale <- Lmat %*% est_beta
+std_err_logrisk_scale <- sqrt(diag(Lmat %*% Vmat %*% t(Lmat)))
+
+LB95_logrisk_scale <- est_logrisk_scale - qnorm(0.975)*std_err_logrisk_scale
+UB95_logrisk_scale <- est_logrisk_scale + qnorm(0.975)*std_err_logrisk_scale
+
+LB90_logrisk_scale <- est_logrisk_scale - qnorm(0.95)*std_err_logrisk_scale
+UB90_logrisk_scale <- est_logrisk_scale + qnorm(0.95)*std_err_logrisk_scale
+
+est_probability_scale <- exp(Lmat %*% est_beta)
+
+LB95_probability_scale <- exp(LB95_logrisk_scale)
+UB95_probability_scale <- exp(UB95_logrisk_scale)
+
+LB90_probability_scale <- exp(LB90_logrisk_scale)
+UB90_probability_scale <- exp(UB90_logrisk_scale)
+
+dat_results_probability_scale <- data.frame(estimate = est_probability_scale,
+                                            # 95% CI
+                                            LB95 = LB95_probability_scale, 
+                                            UB95 = UB95_probability_scale,
+                                            # 90% CI
+                                            LB90 = LB90_probability_scale, 
+                                            UB90 = UB90_probability_scale)
+
+row.names(dat_results_probability_scale) <- row.names(dat_results)
+```
+
+```{r}
+dat_results
+
+dat_results_probability_scale
+
+# Format output to 5 decimal places
+dat_results %>% round(., 5) %>% format(., nsmall = 5) %>% write.csv(., file.path("analysis-complete-case", "formatted-output", "mi_mechanism_baseline_smoking_and_completed_app_usage_preblock.csv"), row.names = TRUE)
+```
